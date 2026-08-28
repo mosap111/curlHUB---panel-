@@ -10,6 +10,8 @@ GREEN="\e[32m"
 YELLOW="\e[33m"
 RED="\e[31m"
 BLUE="\e[34m"
+CYAN="\e[36m"
+MAGENTA="\e[35m"
 RESET="\e[0m"
 
 # 1. التحقق من صلاحيات الروت (Root)
@@ -112,8 +114,28 @@ systemctl start fail2ban
 
 SERVER_IP=$(curl -s ifconfig.me || echo "YOUR_SERVER_IP")
 
+clear
+echo -e "${CYAN}"
+cat << 'ART'
+ $$$$$$\                      $$ |      $$ |  $$ |$$ |  $$ |$$$$$$$\  
+$$  __$$\                     $$ |      $$ |  $$ |$$ |  $$ |$$  __$$\ 
+$$ /  \__|$$\   $$\  $$$$$$\  $$ |      $$$$$$$$ |$$ |  $$ |$$ |  $$ |
+$$ |      $$ |  $$ |$$  __$$\ $$ |      $$  __$$ |$$ |  $$ |$$$$$$$\ |
+$$ |      $$ |  $$ |$$ |  \__|$$ |      $$ |  $$ |$$ |  $$ |$$  __$$\ 
+$$ |  $$\ $$ |  $$ |$$ |      $$ |      $$ |  $$ |$$ |  $$ |$$ |  $$ |
+\$$$$$$  |\$$$$$$  |$$ |      $$$$$$$$\ $$ |  $$ |\$$$$$$  |$$$$$$$  |
+ \______/  \______/ \__|      \________|\__|  \__| \______/ \_______/ 
+ART
+echo -e "${RESET}"
+
 echo -e "${GREEN}====================================================${RESET}"
-echo -e "${GREEN}✅ تم تثبيت وتشغيل لوحة التحكم بنجاح!${RESET}"
-echo -e "${GREEN}🌐 رابط الدخول للوحة: http://${SERVER_IP}${RESET}"
-echo -e "${GREEN}⚙️ مراقبة السجلات: journalctl -u server-panel -f${RESET}"
+echo -e "${GREEN}✅ تم التثبيت بنجاح! السيرفر الخاص بك الآن تحت إدارتك.${RESET}"
+echo -e "${GREEN}====================================================${RESET}"
+echo -e ""
+echo -e "${YELLOW}🌐 رابط اللوحة:${RESET} ${CYAN}http://${SERVER_IP}${RESET}"
+echo -e "${YELLOW}👤 اسم المستخدم:${RESET} ${CYAN}admin${RESET}"
+echo -e "${YELLOW}🔑 كلمة المرور:${RESET} ${CYAN}admin123456${RESET}"
+echo -e ""
+echo -e "${MAGENTA}⚠️ هام: يرجى تغيير كلمة المرور من الإعدادات فور تسجيل الدخول!${RESET}"
+echo -e "${GREEN}⚙️ لمراقبة السجلات لاحقاً:${RESET} journalctl -u server-panel -f"
 echo -e "${GREEN}====================================================${RESET}"
