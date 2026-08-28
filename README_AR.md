@@ -6,7 +6,7 @@
 [عربي 🇸🇦](README_AR.md) | [English 🇬🇧](README.md)
 
 > **⚠️ ملاحظة:** تم إضافة الصور والشاشات قريباً.
-> ![لوحة التحكم الرئيسية](https://via.placeholder.com/800x400?text=Dashboard+Screenshot)
+> ![لوحة التحكم الرئيسية](assets/dashboard.png)
 
 
 ## Server Console, Security Shield & Application Management Platform
@@ -58,6 +58,8 @@ graph TD
    * أزرار مخصصة للتحكم السريع بضغطة زر (Ctrl+C, ESC, TAB ⇥, Ctrl+Z, Ctrl+D, Ctrl+L, الأسهم، و Enter).
 
 ---
+
+![مدير البوتات](assets/bots_manager.png)
 
 #### 🤖 2. مدير البوتات والتطبيقات الذكي (Bots & Python Apps Manager)
 1. **الرصد التلقائي للخدمات:**

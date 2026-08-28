@@ -8,11 +8,15 @@
 
 An advanced, all-in-one platform for managing Linux servers via the browser. Built with **FastAPI**, **Vanilla JS (Glassmorphism)**, and **Xterm.js**, offering unparalleled performance, security, and unique features like intelligent Arabic (RTL) text rendering in the terminal.
 
-![Dashboard Preview](https://via.placeholder.com/800x400?text=Dashboard+Screenshot+Here)
+![Main Dashboard](assets/dashboard.png)
 
 ## ✨ Features
 
+![Smart Terminal](assets/terminal.png)
+
 - 💻 **Persistent Web Terminal:** Zero-disconnect PTY sessions. Run long tasks, close the browser, and resume later! Features an intelligent Arabic BiDi & Reshaping engine.
+![Bots Manager](assets/bots_manager.png)
+
 - 🤖 **Smart Bots Manager:** Auto-detects Python/PHP Telegram bots. Start, stop, and restart with 1-click. View live console logs.
   - **Auto Venv & Requirements:** Automatically detects `.venv` environments. If `requirements.txt` is found, it offers 1-click installation.
   - **Webhooks & Polling:** Native PHP-CGI execution for Webhook bots via FastAPI proxy. Auto-resolves Webhook/Polling conflicts.
