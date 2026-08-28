@@ -1,0 +1,6 @@
+{
+  "username": "admin",
+  "password_hash": "ضع_الهاش_هنا",
+  "port": 8090,
+  "root_path": "/"
+}

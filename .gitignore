@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Config & Secrets
+config.json
+.env
+
+# Backups
+backups/
+*.tar.gz
+*.zip
+
+# Logs
+*.log

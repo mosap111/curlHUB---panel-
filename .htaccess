@@ -1,0 +1,23 @@
+# ==============================================================================
+# Security Hardening: Deny all direct access to sensitive extensions & files
+# ==============================================================================
+
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+<FilesMatch "(^#.*#|\.(bak|backup|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|db|sqlite|sqlite3|py|pyc|pyo|pyd|env|secret_key|key|pem|crt|session|session-journal|md|toml|yml|yaml|json|txt)|~)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} (^|/)\.(?!well-known/) [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>

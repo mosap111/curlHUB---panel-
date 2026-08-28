@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>curlHUB - لوحة تحكم السيرفر</title>
+    
+    <!-- Google Fonts: Cairo & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Xterm.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+    
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/style.v2.css">
+</head>
+<body class="dark-theme">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-overlay active modern-login">
+        <!-- Animated Background Orbs -->
+        <div class="login-orb orb-1"></div>
+        <div class="login-orb orb-2"></div>
+
+        <!-- Top Right Toggles -->
+        <div class="login-toggles">
+            <button id="login-theme-btn" class="btn btn-icon toggle-btn" title="تغيير الثيم">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+            <button id="login-lang-btn" class="btn btn-icon toggle-btn lang-btn" title="تغيير اللغة">EN</button>
+        </div>
+
+        <div class="login-box modern-login-box">
+            <div class="login-header">
+                <div class="login-logo modern-login-logo">
+                    <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="2" fill="none">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </div>
+                <h2 id="login-title" class="modern-login-title">تسجيل الدخول للسيرفر</h2>
+                <p id="login-subtitle" class="modern-login-subtitle">أهلاً بك مجدداً! قم بتسجيل الدخول للمتابعة</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <label id="lbl-username" for="username">اسم المستخدم</label>
+                    <div class="input-wrapper modern-input">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <input type="text" id="username" placeholder="أدخل اسم المستخدم" required autocomplete="username">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label id="lbl-password" for="password">كلمة المرور</label>
+                    <div class="input-wrapper modern-input">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password Row -->
+                <div class="login-options-row">
+                    <label class="remember-label">
+                        <input type="checkbox" id="remember-me">
+                        <span id="lbl-remember">تذكرني على هذا الجهاز</span>
+                    </label>
+                    <a href="#" id="lbl-forgot" class="forgot-link">نسيت الكلمة؟</a>
+                </div>
+                
+                <div id="login-error" class="error-badge hidden"></div>
+                
+                <button type="submit" id="login-btn" class="btn btn-primary btn-block modern-login-btn">
+                    <span id="lbl-login-btn">دخول إلى اللوحة</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+        
+        /* Modern Login Base (Dark by default) */
+        .modern-login {
+            background: #0b1120;
+            overflow: hidden;
+            position: relative;
+        }
+        .login-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+        }
+        .orb-1 {
+            width: 50vw; height: 50vw; max-width: 500px; max-height: 500px;
+            background: rgba(56, 189, 248, 0.12);
+            top: -10%; left: -10%;
+            animation: float 8s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 40vw; height: 40vw; max-width: 400px; max-height: 400px;
+            background: rgba(168, 85, 247, 0.12);
+            bottom: -10%; right: -10%;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+        .login-toggles {
+            position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10;
+        }
+        .login-toggles .toggle-btn {
+            background: rgba(255,255,255,0.05); border-radius: 50%; color: #fff;
+        }
+        .login-toggles .lang-btn {
+            font-family: Cairo; font-weight: bold; font-size: 12px; width: 36px; height: 36px;
+        }
+        .modern-login-box {
+            position: relative; z-index: 5;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .modern-login-logo {
+            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+            color: #fff; border: none; box-shadow: 0 4px 15px rgba(56,189,248,0.4);
+        }
+        .modern-login-title {
+            font-size: 26px; letter-spacing: -0.5px;
+            background: linear-gradient(to left, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .modern-login-subtitle { color: #94a3b8; font-size: 13.5px; }
+        .modern-input {
+            background: rgba(0,0,0,0.2) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 8px !important;
+        }
+        .modern-input input { color: #fff !important; background: transparent !important; }
+        .modern-input svg { stroke: #94a3b8 !important; }
+        .login-options-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 13.5px;
+        }
+        .remember-label {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cbd5e1; user-select: none;
+        }
+        .remember-label input { accent-color: #38bdf8; width: 16px; height: 16px; cursor: pointer; }
+        .forgot-link { color: #38bdf8; text-decoration: none; transition: 0.2s; }
+        .forgot-link:hover { color: #7dd3fc; }
+        .modern-login-btn {
+            border-radius: 8px !important; padding: 12px !important;
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%) !important;
+            border: none !important; font-size: 16px !important; font-weight: 700 !important;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.3) !important; transition: all 0.3s ease !important;
+        }
+        .modern-login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.4) !important; }
+
+        /* Light Theme Overrides */
+        body.light-theme .modern-login { background: #f8fafc; }
+        body.light-theme .orb-1 { background: rgba(56, 189, 248, 0.2); }
+        body.light-theme .orb-2 { background: rgba(168, 85, 247, 0.2); }
+        body.light-theme .login-toggles .toggle-btn { background: rgba(0,0,0,0.05); color: #0f172a; }
+        body.light-theme .modern-login-box {
+            background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+        body.light-theme .modern-login-title { background: linear-gradient(to left, #0f172a, #334155); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        body.light-theme .modern-login-subtitle { color: #64748b; }
+        body.light-theme .modern-input { background: rgba(255,255,255,0.5) !important; border: 1px solid rgba(0,0,0,0.1) !important; }
+        body.light-theme .modern-input input { color: #0f172a !important; }
+        body.light-theme .modern-input svg { stroke: #64748b !important; }
+        body.light-theme .remember-label { color: #475569; }
+        body.light-theme .login-options-row label { color: #475569; }
+    </style>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-container" class="app-wrapper hidden">
+        
+        <!-- TOP NAVBAR -->
+        <header class="app-header glass-nav">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">curlHUB</span>
+                    <span id="hostname-badge" class="badge">Linux Host</span>
+                </div>
+                <button id="mobile-menu-btn" class="btn btn-icon mobile-only hidden-desktop" title="القائمة">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- SYSTEM STATS WIDGETS -->
+            <div class="header-stats">
+                <div class="stat-pill" title="استهلاك المعالج">
+                    <span class="stat-label">CPU:</span>
+                    <span id="stat-cpu" class="stat-val">0%</span>
+                    <div class="mini-bar"><div id="bar-cpu" class="mini-fill" style="width: 0%"></div></div>
+                </div>
+                <div class="stat-pill" title="استهلاك الرام">
+                    <span class="stat-label">RAM:</span>
+                    <span id="stat-ram" class="stat-val">0/0 GB</span>
+                    <div class="mini-bar"><div id="bar-ram" class="mini-fill" style="width: 0%"></div></div>
+                </div>
+                <div class="stat-pill" title="استهلاك الذاكرة الافتراضية Swap">
+                    <span class="stat-label">Swap:</span>
+                    <span id="stat-swap" class="stat-val">0/0 GB</span>
+                    <div class="mini-bar"><div id="bar-swap" class="mini-fill" style="width: 0%"></div></div>
+                </div>
+                <div class="stat-pill" title="استهلاك مساحة التخزين">
+                    <span class="stat-label">Disk:</span>
+                    <span id="stat-disk" class="stat-val">0%</span>
+                    <div class="mini-bar"><div id="bar-disk" class="mini-fill" style="width: 0%"></div></div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION TABS -->
+            <nav class="main-nav">
+                <button class="nav-tab active" data-tab="tab-terminal">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                    <span>الطرفية (Terminal)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-bots">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <path d="M12 7v4"></path>
+                        <line x1="8" y1="16" x2="8" y2="16"></line>
+                        <line x1="16" y1="16" x2="16" y2="16"></line>
+                    </svg>
+                    <span>مدير البوتات (Bots)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-monitor">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>مراقبة الأداء والمنافذ (Monitor)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-security">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>درع الأمان & Fail2Ban</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-files">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>مدير الملفات (Files)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-editor">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span>محرر الأكواد (Editor)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-backups">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>النسخ الاحتياطي (Backups)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-db">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                    </svg>
+                    <span>قواعد البيانات (SQLite)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-logs">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>سجلات النظام (Logs)</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-settings">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>الإعدادات والتنبيهات</span>
+                </button>
+            </nav>
+
+            <!-- USER & LOGOUT -->
+            <div class="user-actions">
+                <button id="theme-toggle-btn" class="btn btn-icon" title="تبديل المظهر (داكن/فاتح)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <button id="btn-quick-clean" class="btn btn-sm btn-booster" title="تفريغ كاش الرام وتنظيف مخلفات النظام">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    <span>⚡ تسريع وتنظيف السيرفر</span>
+                </button>
+
+                <span id="current-username" class="user-tag">admin</span>
+                <button id="logout-btn" class="btn btn-icon" title="تسجيل الخروج">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="app-main">
+
+            <!-- TAB 1: TERMINAL -->
+            <section id="tab-terminal" class="tab-pane active">
+                <div class="terminal-toolbar">
+                    <div class="toolbar-left">
+                        <div class="arabic-toggle-wrap" title="معالجة وتصحيح الكلمات العربية وربط الحروف">
+                            <label class="switch">
+                                <input type="checkbox" id="arabic-fix-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="toggle-text">✨ تصحيح ودعم اللغة العربية (BiDi & Reshaping)</span>
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <button id="btn-term-reset" class="btn btn-sm btn-ghost" title="إنهاء الجلسة الحالية وبدء جلسة نظيفة جديدة">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                                <line x1="12" y1="2" x2="12" y2="12"></line>
+                            </svg>
+                            <span>جلسة جديدة (Reset)</span>
+                        </button>
+                        <button id="btn-term-reconnect" class="btn btn-sm btn-ghost" title="إعادة الاتصال بالجلسة الحالية">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                            </svg>
+                            <span>إعادة الاتصال</span>
+                        </button>
+                        <button id="btn-term-clear" class="btn btn-sm btn-ghost" title="مسح الشاشة">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            <span>مسح الشاشة</span>
+                        </button>
+                        <button id="btn-term-fullscreen" class="btn btn-sm btn-ghost" title="ملء الشاشة">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="terminal-container" id="terminal-wrapper" dir="ltr">
+                    <div id="terminal" dir="ltr"></div>
+                </div>
+
+                <!-- TERMINAL SPECIAL SHORTCUT KEYS -->
+                <div class="terminal-keys-bar">
+                    <div class="key-group">
+                        <span class="keys-label">مفاتيح سريعة:</span>
+                        <button class="term-key-btn btn-key-danger" data-key="ctrl-c" title="إلغاء وإيقاف الأمر الجاري (Ctrl+C / SIGINT)">Ctrl+C</button>
+                        <button class="term-key-btn btn-key-warning" data-key="esc" title="زر الهروب / الإلغاء (ESC)">ESC</button>
+                        <button class="term-key-btn btn-key-primary" data-key="tab" title="إكمال تلقائي للأوامر والمسارات (TAB)">TAB ⇥</button>
+                        <button class="term-key-btn" data-key="ctrl-z" title="تعليق العملية بالخلفية (Ctrl+Z / SIGTSTP)">Ctrl+Z</button>
+                        <button class="term-key-btn" data-key="ctrl-d" title="خروج / EOF (Ctrl+D)">Ctrl+D</button>
+                        <button class="term-key-btn" data-key="ctrl-l" title="مسح الشاشة (Ctrl+L)">Ctrl+L</button>
+                    </div>
+
+                    <div class="key-group arrows-group">
+                        <button class="term-key-btn btn-key-arrow" data-key="arrow-up" title="استدعاء الأمر السابق (السهم لأعلى)">▲ السابق</button>
+                        <button class="term-key-btn btn-key-arrow" data-key="arrow-down" title="استدعاء الأمر التالي (السهم لأسفل)">▼ التالي</button>
+                        <button class="term-key-btn btn-key-arrow" data-key="arrow-left" title="تحريك المؤشر يساراً">◀</button>
+                        <button class="term-key-btn btn-key-arrow" data-key="arrow-right" title="تحريك المؤشر يميناً">▶</button>
+                    </div>
+
+                    <div class="key-group">
+                        <button class="term-key-btn" data-key="ctrl-a" title="الانتقال لبداية السطر (Ctrl+A)">Ctrl+A</button>
+                        <button class="term-key-btn" data-key="ctrl-e" title="الانتقال لنهاية السطر (Ctrl+E)">Ctrl+E</button>
+                        <button class="term-key-btn btn-key-success" data-key="enter" title="تنفيذ الأمر (Enter)">Enter ↵</button>
+                    </div>
+                </div>
+
+                <!-- QUICK COMMAND SHORTCUTS -->
+                <div class="quick-commands-bar">
+                    <span class="quick-title">أوامر سريعة:</span>
+                    <button class="cmd-pill" data-cmd="htop">htop</button>
+                    <button class="cmd-pill" data-cmd="df -h">df -h</button>
+                    <button class="cmd-pill" data-cmd="free -h">free -h</button>
+                    <button class="cmd-pill" data-cmd="systemctl status nginx">nginx status</button>
+                    <button class="cmd-pill" data-cmd="ls -la">ls -la</button>
+                    <button class="cmd-pill" data-cmd="journalctl -xe -n 50">journalctl</button>
+                </div>
+            </section>
+
+            <!-- TAB: TELEGRAM BOTS & APPS MANAGER -->
+            <section id="tab-bots" class="tab-pane">
+                <div class="monitor-container">
+                    <div class="monitor-top-banner glass-card">
+                        <div class="banner-info">
+                            <div class="sys-badge">
+                                <span class="badge-dot"></span>
+                                <span>مدير البوتات والتطبيقات الذكي (Bots & Python Apps Manager)</span>
+                            </div>
+                            <div class="sys-subinfo">
+                                <span>البوتات المسجلة: <strong id="bots-total-count" style="color: #38bdf8;">0</strong></span>
+                                <span>النشطة حالياً: <strong id="bots-running-count" style="color: #34d399;">0 شغال</strong></span>
+                                <span>استهلاك الرام الإجمالي: <strong id="bots-ram-count" style="color: #fbbf24;">0 MB</strong></span>
+                            </div>
+                        </div>
+                        <div class="banner-actions">
+                            <button id="btn-bots-refresh" class="btn btn-sm btn-ghost" title="تحديث حالة البوتات">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                                <span>تحديث</span>
+                            </button>
+                            
+                            <button id="btn-webhook-tools" class="btn btn-sm btn-ghost" title="أدوات الويبهوك לבوتات PHP">
+                                🌐 ويبهوك
+                            </button>
+
+                            <button id="btn-add-custom-bot" class="btn btn-sm btn-primary" title="تسجيل بوت أو تطبيق جديد">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>➕ إضافة تطبيق/بوت</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bots Grid -->
+                    <div id="bots-cards-grid" class="bots-grid">
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+                            جاري فحص ورصد البوتات والتطبيقات قيد التشغيل...
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: SYSTEM & PORTS MONITOR -->
+            <section id="tab-monitor" class="tab-pane">
+                <div class="monitor-container">
+                    
+                    <!-- Monitor Top Banner -->
+                    <div class="monitor-top-banner glass-card">
+                        <div class="banner-info">
+                            <div class="sys-badge">
+                                <span class="badge-dot"></span>
+                                <span id="mon-hostname">server</span> &bull; <span id="mon-os">Linux</span>
+                            </div>
+                            <div class="sys-subinfo">
+                                <span>مدة التشغيل: <strong id="mon-uptime">--</strong></span>
+                                <span>متوسط الضغط: <strong id="mon-loadavg">--</strong></span>
+                                <span>الشبكة: <strong id="mon-net-io">--</strong></span>
+                            </div>
+                        </div>
+                        <div class="banner-actions">
+                            <div class="auto-refresh-wrap">
+                                <span class="refresh-label">تحديث تلقائي:</span>
+                                <select id="mon-refresh-interval" class="select-sm">
+                                    <option value="3000" selected>كل 3 ثوانٍ</option>
+                                    <option value="5000">كل 5 ثوانٍ</option>
+                                    <option value="10000">كل 10 ثوانٍ</option>
+                                    <option value="0">إيقاف (يدوي)</option>
+                                </select>
+                            </div>
+                            <button id="btn-mon-refresh" class="btn btn-sm btn-ghost" title="تحديث يدوي">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                                <span>تحديث الآن</span>
+                            </button>
+                            <button id="btn-clean-from-monitor" class="btn btn-sm btn-booster" title="تنظيف السيرفر">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                                <span>⚡ تنظيف وتسريع</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 Summary KPI Cards -->
+                    <div class="monitor-kpi-grid">
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-header">
+                                <div class="kpi-icon icon-cpu">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                        <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                                        <rect x="9" y="9" width="6" height="6"></rect>
+                                        <line x1="9" y1="1" x2="9" y2="4"></line>
+                                        <line x1="15" y1="1" x2="15" y2="4"></line>
+                                        <line x1="9" y1="20" x2="9" y2="23"></line>
+                                        <line x1="15" y1="20" x2="15" y2="23"></line>
+                                        <line x1="20" y1="9" x2="23" y2="9"></line>
+                                        <line x1="20" y1="14" x2="23" y2="14"></line>
+                                        <line x1="1" y1="9" x2="4" y2="9"></line>
+                                        <line x1="1" y1="14" x2="4" y2="14"></line>
+                                    </svg>
+                                </div>
+                                <span class="kpi-title">المعالج (CPU)</span>
+                                <span id="mon-cpu-cores-badge" class="badge-tag">1 Core</span>
+                            </div>
+                            <div class="kpi-value-wrap">
+                                <span id="mon-cpu-val" class="kpi-main-val">0%</span>
+                            </div>
+                            <div class="kpi-progress">
+                                <div id="mon-cpu-bar" class="kpi-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="kpi-footer">
+                                <span>الضغط: <strong id="mon-cpu-load">0.0 / 0.0</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-header">
+                                <div class="kpi-icon icon-ram">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                        <path d="M6 19v-3M10 19v-3M14 19v-3M18 19v-3M6 8V5M10 8V5M14 8V5M18 8V5M2 11h20v4H2z"></path>
+                                    </svg>
+                                </div>
+                                <span class="kpi-title">الذاكرة (RAM)</span>
+                                <span id="mon-ram-percent-badge" class="badge-tag">0%</span>
+                            </div>
+                            <div class="kpi-value-wrap">
+                                <span id="mon-ram-val" class="kpi-main-val">0 / 0 GB</span>
+                            </div>
+                            <div class="kpi-progress">
+                                <div id="mon-ram-bar" class="kpi-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="kpi-footer">
+                                <span>المخزن المؤقت: <strong id="mon-ram-cache">0 MB</strong></span>
+                                <span>المتبقي: <strong id="mon-ram-free">0 GB</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-header">
+                                <div class="kpi-icon icon-proc">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="kpi-title">البرامج والعمليات</span>
+                                <span id="mon-proc-total-badge" class="badge-tag">0 عملية</span>
+                            </div>
+                            <div class="kpi-value-wrap">
+                                <span id="mon-proc-running" class="kpi-main-val text-success">0 نشطة</span>
+                            </div>
+                            <div class="proc-breakdown">
+                                <span class="badge-status status-running"><strong id="mon-proc-run-count">0</strong> شغالة</span>
+                                <span class="badge-status status-sleeping"><strong id="mon-proc-sleep-count">0</strong> نائمة</span>
+                                <span class="badge-status status-zombie"><strong id="mon-proc-zombie-count">0</strong> معلقة</span>
+                            </div>
+                            <div class="kpi-footer">
+                                <span>المستهلك الأكبر: <strong id="mon-top-consumer">--</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-header">
+                                <div class="kpi-icon icon-ports">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                </div>
+                                <span class="kpi-title">المنافذ المفتوحة (Ports)</span>
+                                <span id="mon-ports-count-badge" class="badge-tag">0 بورت</span>
+                            </div>
+                            <div class="kpi-value-wrap">
+                                <span id="mon-ports-val" class="kpi-main-val">0 منفذ نشط</span>
+                            </div>
+                            <div class="kpi-footer">
+                                <span>الصادر: <strong id="mon-net-sent">0 MB</strong></span>
+                                <span>الوارد: <strong id="mon-net-recv">0 MB</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 1: Processes Table -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                                <h3>البرامج والعمليات الأكثر استهلاكاً للموارد (Top Processes)</h3>
+                                <span id="procs-count-label" class="badge-tag">0</span>
+                            </div>
+                            <div class="section-controls">
+                                <div class="search-box">
+                                    <input type="text" id="proc-search-input" placeholder="بحث باسم البرنامج أو الـ PID...">
+                                </div>
+                                <div class="sort-box">
+                                    <label>ترتيب حسب:</label>
+                                    <select id="proc-sort-select" class="select-sm">
+                                        <option value="cpu" selected>الأعلى معالجاً (CPU)</option>
+                                        <option value="ram">الأعلى ذاكرة (RAM)</option>
+                                        <option value="pid">رقم العملية (PID)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px;">PID</th>
+                                        <th>اسم البرنامج / الأمر</th>
+                                        <th style="width: 100px;">المستخدم</th>
+                                        <th style="width: 110px;">المعالج (CPU)</th>
+                                        <th style="width: 130px;">الذاكرة (RAM)</th>
+                                        <th style="width: 80px;">الخيوط</th>
+                                        <th style="width: 90px;">الحالة</th>
+                                        <th style="width: 100px; text-align: center;">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="procs-table-body">
+                                    <tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--text-muted);">جاري فحص العمليات النشطة...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Open Ports Table -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
+                                <h3>المنافذ المفتوحة والخدمات المستمعة (Listening Ports & Services)</h3>
+                                <span id="ports-count-label" class="badge-tag">0</span>
+                            </div>
+                            <div class="section-controls">
+                                <div class="search-box">
+                                    <input type="text" id="ports-search-input" placeholder="بحث بالبورت أو اسم الخدمة...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 110px;">رقم المنفذ (Port)</th>
+                                        <th style="width: 100px;">البروتوكول</th>
+                                        <th>البرنامج والخدمة المستمعة</th>
+                                        <th style="width: 100px;">الـ PID</th>
+                                        <th style="width: 160px;">عنوان الربط (Binding IP)</th>
+                                        <th style="width: 120px;">حالة الاتصال</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ports-table-body">
+                                    <tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">جاري فحص المنافذ المفتوحة...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: System Services Table -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                                <h3>خدمات وتطبيقات السيرفر (System Services & Daemons)</h3>
+                                <span id="services-count-label" class="badge-tag">0</span>
+                            </div>
+                            <div class="section-controls">
+                                <div class="search-box">
+                                    <input type="text" id="services-search-input" placeholder="بحث باسم الخدمة (مثل nginx, cron)...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 180px;">اسم الخدمة (Service Unit)</th>
+                                        <th>الوصف والدور</th>
+                                        <th style="width: 120px;">حالة الخدمة</th>
+                                        <th style="width: 100px;">الفرعية (Substate)</th>
+                                        <th style="width: 180px; text-align: center;">إجراءات التحكم</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="services-table-body">
+                                    <tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">جاري فحص خدمات النظام...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB: SECURITY SHIELD & ATTACK MONITOR -->
+            <section id="tab-security" class="tab-pane">
+                <div class="monitor-container">
+                    
+                    <!-- Security Top Banner -->
+                    <div class="monitor-top-banner glass-card" style="border-left: 4px solid #10b981;">
+                        <div class="banner-info">
+                            <div class="sys-badge" style="color: #34d399;">
+                                <span class="badge-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
+                                <span>درع الأمان والتحصين الشامل (Active Defense & Honeypots)</span>
+                            </div>
+                            <div class="sys-subinfo">
+                                <span>حالة الدرع: <strong style="color: #34d399;">نشط ويعمل 100% 🛡️</strong></span>
+                                <span>مصائد المسارات (Honeypots): <strong style="color: #38bdf8;">21 مسار فخ نشط 🪤</strong></span>
+                                <span>حظر التخمين التلقائي: <strong style="color: #f59e0b;">مفعل (5 محاولات = حظر 15 دقيقة) 🔒</strong></span>
+                            </div>
+                        </div>
+                        <div class="banner-actions">
+                            <button id="btn-sec-ban-manual" class="btn btn-sm btn-danger" title="حظر عنوان IP يدوياً">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                </svg>
+                                <span>➕ حظر IP يدوي</span>
+                            </button>
+                            <button id="btn-sec-clear-logs" class="btn btn-sm btn-ghost" title="تفريغ سجلات الأمان">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                <span>مسح السجلات</span>
+                            </button>
+                            <button id="btn-sec-refresh" class="btn btn-sm btn-primary" title="تحديث السجلات">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                                <span>تحديث</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Security KPI Cards -->
+                    <div class="mon-kpi-grid">
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                </svg>
+                            </div>
+                            <div class="kpi-content">
+                                <span class="kpi-title">إجمالي المحاولات المحظورة</span>
+                                <div class="kpi-val-row">
+                                    <span class="kpi-val" id="sec-kpi-total">0</span>
+                                    <span class="kpi-unit">هجوم تم صده</span>
+                                </div>
+                                <span class="kpi-hint">مجموع التهديدات والماسحات المعترضة</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </div>
+                            <div class="kpi-content">
+                                <span class="kpi-title">العناوين المحظورة حالياً</span>
+                                <div class="kpi-val-row">
+                                    <span class="kpi-val" id="sec-kpi-banned">0</span>
+                                    <span class="kpi-unit">IP محظور</span>
+                                </div>
+                                <span class="kpi-hint">ممنوعون من الوصول مؤقتاً</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                    <polyline points="2 17 12 22 22 17"></polyline>
+                                    <polyline points="2 12 12 17 22 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="kpi-content">
+                                <span class="kpi-title">ماسحات ومصائد المسارات</span>
+                                <div class="kpi-val-row">
+                                    <span class="kpi-val" id="sec-kpi-scanners">0</span>
+                                    <span class="kpi-unit">أداة مصطادة</span>
+                                </div>
+                                <span class="kpi-hint">Gobuster, Sqlmap, Nikto, Honeypots</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5L13 10m-1.5 1.5L10 13m-1.5 1.5L7 16m-1.5 1.5L4 19m-2 2l2-2"></path>
+                                    <circle cx="7.5" cy="7.5" r="4.5"></circle>
+                                </svg>
+                            </div>
+                            <div class="kpi-content">
+                                <span class="kpi-title">محاولات تخمين الدخول</span>
+                                <div class="kpi-val-row">
+                                    <span class="kpi-val" id="sec-kpi-brute">0</span>
+                                    <span class="kpi-unit">محاولة فاشلة</span>
+                                </div>
+                                <span class="kpi-hint">تم إحباطها بنجاح</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTIVE BANNED IPS SECTION -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-title-row">
+                            <div class="section-title-wrap">
+                                <span class="sec-title-icon" style="color: #ef4444;">🔒</span>
+                                <h3 class="section-title">قائمة عناوين الـ IP المحظورة حالياً (Active Banned IPs)</h3>
+                                <span class="badge-count" id="sec-banned-badge">0 محظور</span>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 160px;">عنوان الـ IP</th>
+                                        <th>سبب الحظر الأمني</th>
+                                        <th style="width: 170px;">تاريخ ووقت الحظر</th>
+                                        <th style="width: 140px;">المدة المتبقية</th>
+                                        <th style="width: 120px; text-align: center;">إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sec-banned-table-body">
+                                    <tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">لا توجد عناوين محظورة حالياً - النظام آمن 100% 🛡️</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- LIVE INTRUSION & THREAT LOGS SECTION -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-title-row">
+                            <div class="section-title-wrap">
+                                <span class="sec-title-icon" style="color: #38bdf8;">📋</span>
+                                <h3 class="section-title">سجل الهجمات ومحاولات التخمين والاختراق اللحظي (Live Attack Logs)</h3>
+                                <span class="badge-count" id="sec-logs-badge">0 حدث</span>
+                            </div>
+                            <div class="section-controls">
+                                <div class="search-box" style="width: 220px;">
+                                    <input type="text" id="sec-logs-search" placeholder="بحث بالـ IP أو المسار أو الأداة...">
+                                </div>
+                                <div class="sort-box">
+                                    <label for="sec-filter-type">نوع التهديد:</label>
+                                    <select id="sec-filter-type" class="select-sm">
+                                        <option value="all">كل التهديدات</option>
+                                        <option value="brute">تخمين تسجيل الدخول (Brute-Force)</option>
+                                        <option value="scanner">أدوات فحص وتخمين مسارات (Scanners)</option>
+                                        <option value="honeypot">فخ مسارات حساسة (Honeypot)</option>
+                                        <option value="manual">حظر يدوي (Manual)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-container" style="max-height: 520px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 160px;">التاريخ والوقت</th>
+                                        <th style="width: 140px;">عنوان الـ IP</th>
+                                        <th style="width: 220px;">نوع الهجوم / التهديد</th>
+                                        <th>المسار المستهدف / التفاصيل</th>
+                                        <th style="width: 180px;">أداة / متصفح المهاجم</th>
+                                        <th style="width: 130px; text-align: center;">الإجراء المتخذ</th>
+                                        <th style="width: 100px; text-align: center;">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sec-logs-table-body">
+                                    <tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">لا توجد هجمات مسجلة حتى الآن 🛡️</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SYSTEM FAIL2BAN & UFW FIREWALL STATUS -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-title-row">
+                            <div class="section-title-wrap">
+                                <span class="sec-title-icon" style="color: #10b981;">🛡️</span>
+                                <h3 class="section-title">حالة جدار الحماية وسجون Fail2Ban في النظام (System Fail2Ban & UFW)</h3>
+                                <span class="badge-count" id="fail2ban-jails-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">5 سجون نشطة</span>
+                            </div>
+                        </div>
+                        <div class="f2b-grid-container" id="f2b-jails-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                            <!-- Jails populated dynamically -->
+                        </div>
+                        <div class="table-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <h4 style="font-size: 14px; color: var(--text-secondary);">عناوين IP المحظورة في سجون النظام (System Banned IPs):</h4>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 180px;">عنوان الـ IP</th>
+                                        <th>السجن المسؤول (Jail)</th>
+                                        <th style="width: 140px; text-align: center;">إجراء فك الحظر</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="f2b-banned-table-body">
+                                    <tr><td colspan="3" style="text-align: center; padding: 16px; color: var(--text-muted);">جاري فحص سجون Fail2Ban...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB 2: FILE MANAGER -->
+            <section id="tab-files" class="tab-pane">
+                <div class="files-header glass-card">
+                    <div class="files-nav-bar">
+                        <div class="nav-buttons">
+                            <button id="btn-files-up" class="btn btn-icon" title="المجلد السابق">
+                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                            <button id="btn-files-refresh" class="btn btn-icon" title="تحديث القائمة">
+                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- BREADCRUMB PATH -->
+                        <div class="path-breadcrumbs" id="files-breadcrumbs">
+                            <span class="breadcrumb-item" data-path="/">/</span>
+                            <span class="breadcrumb-item" data-path="/root">root</span>
+                        </div>
+
+                        <!-- SEARCH & QUICK SHORTCUTS -->
+                        <div class="files-quick-jumps">
+                            <button class="btn btn-sm btn-ghost jump-btn" data-path="/root">/root</button>
+                            <button class="btn btn-sm btn-ghost jump-btn" data-path="/root/shop">/shop</button>
+                            <button class="btn btn-sm btn-ghost jump-btn" data-path="/root/yms_project">/yms</button>
+                            <button class="btn btn-sm btn-ghost jump-btn" data-path="/etc/nginx">/nginx</button>
+                            <button class="btn btn-sm btn-ghost jump-btn" data-path="/var/log">/logs</button>
+                        </div>
+                    </div>
+
+                    <div class="files-actions-bar">
+                        <div class="action-buttons-group">
+                            <button id="btn-upload-file" class="btn btn-primary btn-sm">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>رفع ملفات</span>
+                            </button>
+                            <input type="file" id="file-upload-input" multiple style="display: none;">
+
+                            <button id="btn-new-file" class="btn btn-secondary btn-sm">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                                </svg>
+                                <span>ملف جديد</span>
+                            </button>
+
+                            <button id="btn-new-folder" class="btn btn-secondary btn-sm">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                                </svg>
+                                <span>مجلد جديد</span>
+                            </button>
+                        </div>
+
+                        <div class="files-search-box">
+                            <input type="text" id="files-filter" placeholder="بحث في المجلد الحالي...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DRAG DROP ZONE & FILE LIST -->
+                <div class="files-table-container glass-card" id="drop-zone">
+                    <div class="drop-overlay hidden" id="drop-overlay">
+                        <svg viewBox="0 0 24 24" width="60" height="60" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h3>أفلت الملفات هنا لرفعها فوراً</h3>
+                    </div>
+
+                    <table class="files-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 45%;">الاسم</th>
+                                <th style="width: 15%;">الحجم</th>
+                                <th style="width: 20%;">تاريخ التعديل</th>
+                                <th style="width: 10%;">الصلاحيات</th>
+                                <th style="width: 10%; text-align: center;">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="files-list-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 3: CODE EDITOR -->
+            <section id="tab-editor" class="tab-pane">
+                <div class="editor-header glass-card">
+                    <div class="editor-file-info">
+                        <div class="file-icon-wrap">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                        </div>
+                        <span id="editor-active-filename">لم يتم فتح أي ملف</span>
+                        <span id="editor-unsaved-dot" class="unsaved-indicator hidden" title="تغييرات غير محفوظة">●</span>
+                    </div>
+
+                    <div class="editor-controls">
+                        <div class="select-wrapper">
+                            <select id="editor-mode-select">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="html">HTML</option>
+                                <option value="css">CSS</option>
+                                <option value="sh">Shell / Bash</option>
+                                <option value="json">JSON</option>
+                                <option value="yaml">YAML</option>
+                                <option value="nginx">Nginx</option>
+                                <option value="text">Plain Text</option>
+                            </select>
+                        </div>
+
+                        <button id="btn-editor-save" class="btn btn-primary btn-sm" title="حفظ (Ctrl+S)">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            <span>حفظ الملف</span>
+                        </button>
+
+                        <button id="btn-editor-close" class="btn btn-ghost btn-sm" title="إغلاق الملف">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            <span>إغلاق</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper glass-card">
+                    <div id="code-editor-container"></div>
+                </div>
+
+                <div class="editor-status-bar">
+                    <span id="editor-cursor-pos">السطر: 1, العمود: 1</span>
+                    <span id="editor-file-path">المسار: --</span>
+                    <span>UTF-8</span>
+                </div>
+            </section>
+
+            <!-- TAB: BACKUP & RESTORE -->
+            <section id="tab-backups" class="tab-pane">
+                <div class="monitor-container">
+                    <div class="monitor-top-banner glass-card">
+                        <div class="banner-info">
+                            <div class="sys-badge">
+                                <span class="badge-dot"></span>
+                                <span>مدير النسخ الاحتياطي والاستعادة الفورية (Backups & Disaster Recovery)</span>
+                            </div>
+                            <div class="sys-subinfo">
+                                <span>النسخ المتوفرة: <strong id="backups-count-stat" style="color: #38bdf8;">0</strong></span>
+                                <span>المجلد الافتراضي: <strong style="color: #94a3b8;">/root/server_panel/backups</strong></span>
+                            </div>
+                        </div>
+                        <div class="banner-actions">
+                            <button id="btn-backups-refresh" class="btn btn-sm btn-ghost" title="تحديث القائمة">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                                <span>تحديث</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Backup Presets -->
+                    <div class="backup-presets-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                        <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-shop">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 24px;">🛍️</span>
+                                <strong style="color: var(--text-primary);">بوت المتجر (Shop)</strong>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">نسخ كود وإعدادات بوت المتجر</p>
+                            <button class="btn btn-sm btn-primary" style="width: 100%;">📦 أخذ نسخة الآن</button>
+                        </div>
+
+                        <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-yms">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 24px;">🤖</span>
+                                <strong style="color: var(--text-primary);">مشروع YMS</strong>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">نسخ مشروع وبوتات YMS</p>
+                            <button class="btn btn-sm btn-primary" style="width: 100%;">📦 أخذ نسخة الآن</button>
+                        </div>
+
+                        <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-db">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 24px;">🗄️</span>
+                                <strong style="color: var(--text-primary);">قواعد البيانات (.db)</strong>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">تجميع كافة ملفات SQLite في أرشيف</p>
+                            <button class="btn btn-sm btn-primary" style="width: 100%;">📦 نسخ القواعد الآن</button>
+                        </div>
+
+                        <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-panel">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 24px;">⚙️</span>
+                                <strong style="color: var(--text-primary);">لوحة التحكم (Panel)</strong>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">نسخ إعدادات وكود لوحة السيرفر</p>
+                            <button class="btn btn-sm btn-primary" style="width: 100%;">📦 نسخ اللوحة الآن</button>
+                        </div>
+                    </div>
+
+                    <!-- Backups List Table -->
+                    <div class="monitor-section glass-card">
+                        <div class="section-title-row">
+                            <div class="section-title-wrap">
+                                <span class="sec-title-icon" style="color: #38bdf8;">📂</span>
+                                <h3 class="section-title">ملفات النسخ الاحتياطي المحفوظة</h3>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم الملف</th>
+                                        <th style="width: 130px;">الحجم</th>
+                                        <th style="width: 180px;">تاريخ الإنشاء</th>
+                                        <th style="width: 160px; text-align: center;">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="backups-table-body">
+                                    <tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-muted);">جاري تحميل النسخ الاحتياطية...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: SQLITE DATABASE EXPLORER -->
+            <section id="tab-db" class="tab-pane">
+                <div class="monitor-container">
+                    <div class="monitor-top-banner glass-card">
+                        <div class="banner-info">
+                            <div class="sys-badge">
+                                <span class="badge-dot"></span>
+                                <span>مستعرض ومحرر قواعد بيانات SQLite (Database Studio)</span>
+                            </div>
+                            <div class="sys-subinfo">
+                                <span>اختر قاعدة البيانات:</span>
+                                <select id="db-select-dropdown" class="select-sm" style="min-width: 240px; background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color);">
+                                    <option value="">جاري البحث عن قواعد البيانات...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="banner-actions">
+                            <button id="btn-db-refresh" class="btn btn-sm btn-ghost" title="إعادة فحص القواعد">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                                <span>فحص القواعد</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- DB Layout Grid -->
+                    <div style="display: grid; grid-template-columns: 260px 1fr; gap: 16px;">
+                        <!-- Left: Tables List -->
+                        <div class="glass-card" style="padding: 16px; height: fit-content;">
+                            <h4 style="font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <span>📋 جداول القاعدة</span>
+                                <span id="db-tables-count" class="badge-tag" style="margin-right: auto;">0</span>
+                            </h4>
+                            <div id="db-tables-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto;">
+                                <span style="color: var(--text-muted); font-size: 13px;">اختر قاعدة بيانات من القائمة أعلاه</span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Query Editor & Results -->
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <!-- Query Input Box -->
+                            <div class="glass-card" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">استعلام SQL:</span>
+                                    <button id="btn-run-sql" class="btn btn-sm btn-primary">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                        </svg>
+                                        <span>⚡ تنفيذ (Run Query)</span>
+                                    </button>
+                                </div>
+                                <textarea id="db-query-input" style="width: 100%; height: 90px; background: var(--bg-input); color: #38bdf8; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; font-family: var(--font-code); font-size: 13px; resize: vertical;" placeholder="SELECT * FROM table_name LIMIT 50;"></textarea>
+                            </div>
+
+                            <!-- Results Container -->
+                            <div class="glass-card" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <h4 style="font-size: 14px; color: var(--text-primary);">نتائج الاستعلام</h4>
+                                    <span id="db-query-stat" style="font-size: 12px; color: var(--text-muted);">لم يتم تنفيذ استعلام بعد</span>
+                                </div>
+                                <div class="table-container" style="max-height: 400px; overflow: auto;">
+                                    <table class="data-table" id="db-results-table">
+                                        <thead id="db-results-head">
+                                            <tr><th>الحقول</th></tr>
+                                        </thead>
+                                        <tbody id="db-results-body">
+                                            <tr><td style="text-align: center; padding: 24px; color: var(--text-muted);">النتائج ستظهر هنا بعد تنفيذ الاستعلام أو النقر على أحد الجداول</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: UNIFIED SYSTEM LOG VIEWER -->
+            <section id="tab-logs" class="tab-pane">
+                <div class="monitor-container">
+                    <div class="monitor-top-banner glass-card">
+                        <div class="banner-info">
+                            <div class="sys-badge">
+                                <span class="badge-dot"></span>
+                                <span>مستعرض سجلات النظام والخادم الموحد (Unified Log Explorer)</span>
+                            </div>
+                            <div class="sys-subinfo">
+                                <span>مصدر السجل:</span>
+                                <select id="log-source-select" class="select-sm" style="min-width: 220px; background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color);">
+                                    <option value="nginx-access">سجلات وصول Nginx (Access)</option>
+                                    <option value="nginx-error">سجلات أخطاء Nginx (Errors)</option>
+                                    <option value="fail2ban">سجلات حظر Fail2Ban</option>
+                                    <option value="ssh-auth">سجلات أمان SSH</option>
+                                    <option value="system-dmesg">سجلات النواة (Kernel/Dmesg)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="banner-actions">
+                            <div class="search-box" style="width: 220px;">
+                                <input type="text" id="log-filter-input" placeholder="فلترة وبحث في السطور...">
+                            </div>
+                            <button id="btn-refresh-log" class="btn btn-sm btn-primary">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                                <span>تحديث السجل</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Terminal Style Log Box -->
+                    <div class="glass-card" style="padding: 14px; background: var(--bg-main);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                                <span id="log-viewer-file-label" style="font-family: var(--font-code); font-size: 12px; color: var(--text-muted); margin-right: 10px;">/var/log/nginx/access.log</span>
+                            </div>
+                            <span id="log-lines-count" style="font-size: 12px; color: var(--text-secondary);">0 سطر</span>
+                        </div>
+                        <pre id="log-content-display" style="height: 520px; overflow: auto; font-family: var(--font-code); font-size: 12.5px; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all; padding: 6px;" dir="ltr">جاري تحميل السجلات...</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: SETTINGS -->
+            <section id="tab-settings" class="tab-pane">
+                <div class="settings-container">
+                    
+                    <!-- Change Password Card -->
+                    <div class="settings-card glass-card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <h3>تغيير كلمة المرور</h3>
+                        </div>
+                        <p class="card-desc">قم بتعيين كلمة مرور قوية لتأمين لوحة تحكم السيرفر والطرفية.</p>
+
+                        <form id="change-pass-form">
+                            <div class="input-group">
+                                <label for="old-pass">كلمة المرور الحالية</label>
+                                <input type="password" id="old-pass" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="new-pass">كلمة المرور الجديدة</label>
+                                <input type="password" id="new-pass" minlength="6" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="confirm-new-pass">تأكيد كلمة المرور الجديدة</label>
+                                <input type="password" id="confirm-new-pass" minlength="6" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">حفظ كلمة المرور الجديدة</button>
+                        </form>
+                    </div>
+
+                    <!-- Telegram Alert Notifications Card -->
+                    <div class="settings-card glass-card">
+                        <div class="card-header">
+                            <span style="font-size: 22px;">🔔</span>
+                            <h3>تنبيهات وإشعارات تليجرام الفورية</h3>
+                        </div>
+                        <p class="card-desc">استقبل إشعارات فورية على حسابك عند حدوث هجمات، توقف البوتات، أو ارتفاع استهلاك السيرفر.</p>
+
+                        <form id="telegram-settings-form">
+                            <div class="input-group">
+                                <label for="tg-bot-token">توكن بوت تليجرام (Bot Token)</label>
+                                <input type="text" id="tg-bot-token" placeholder="مثال: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                            </div>
+                            <div class="input-group">
+                                <label for="tg-chat-id">معرف المحادثة (Chat ID)</label>
+                                <input type="text" id="tg-chat-id" placeholder="مثال: 123456789">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                                    <input type="checkbox" id="tg-alerts-enabled" style="accent-color: var(--accent-primary);">
+                                    <span>تفعيل إرسال التنبيهات إلى تليجرام</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; margin-right: 16px;">
+                                    <input type="checkbox" id="tg-alert-attack" checked style="accent-color: var(--accent-primary);">
+                                    <span>إشعار عند حظر هجوم أو ماسح أمني جديد</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; margin-right: 16px;">
+                                    <input type="checkbox" id="tg-alert-bot" checked style="accent-color: var(--accent-primary);">
+                                    <span>إشعار عند تعطل أو توقف أي بوت</span>
+                                </label>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">حفظ الإعدادات</button>
+                                <button type="button" id="btn-test-telegram" class="btn btn-secondary">⚡ تجربة إرسال تنبيه</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Server Summary Card -->
+                    <div class="settings-card glass-card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                            </svg>
+                            <h3>معلومات السيرفر والبيئة</h3>
+                        </div>
+                        <div class="info-list">
+                            <div class="info-row">
+                                <span>نظام التشغيل:</span>
+                                <strong>Linux (Ubuntu / Debian x86_64)</strong>
+                            </div>
+                            <div class="info-row">
+                                <span>المعالج:</span>
+                                <strong>Intel Xeon 1 vCPU</strong>
+                            </div>
+                            <div class="info-row">
+                                <span>الذاكرة العشوائية:</span>
+                                <strong>2 GB RAM + 3 GB Swap (مفعلة)</strong>
+                            </div>
+                            <div class="info-row">
+                                <span>المنفذ الافتراضي للوحة:</span>
+                                <strong>8090</strong>
+                            </div>
+                            <div class="info-row">
+                                <span>دعم اللغة العربية:</span>
+                                <strong style="color: #10b981;">خوارزمية BiDi & Reshaping مفعلة</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL: ITEM PROMPT (Create file / folder / rename) -->
+    <div id="prompt-modal" class="modal-overlay hidden">
+        <div class="modal-box glass-card">
+            <h3 id="modal-title">إنشاء جديد</h3>
+            <div class="input-group">
+                <label id="modal-label" for="modal-input">الاسم:</label>
+                <input type="text" id="modal-input" placeholder="...">
+            </div>
+            <div class="modal-buttons">
+                <button id="btn-modal-cancel" class="btn btn-ghost">إلغاء</button>
+                <button id="btn-modal-confirm" class="btn btn-primary">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SERVER CLEANING RESULTS -->
+    <div id="clean-modal" class="modal-overlay hidden">
+        <div class="modal-box glass-card clean-modal-box">
+            <div class="modal-clean-header">
+                <div class="clean-icon-wrap">
+                    <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <h3>نتيجة تنظيف وتسريع السيرفر</h3>
+                <p id="clean-modal-subtitle">تم تنفيذ مهام التحسين وتحرير الموارد بنجاح</p>
+            </div>
+            <div class="clean-stats-grid">
+                <div class="clean-stat-box">
+                    <span class="clean-stat-label">الذاكرة المحررة (RAM)</span>
+                    <strong id="clean-ram-freed" class="clean-stat-num text-success">+0 MB</strong>
+                </div>
+                <div class="clean-stat-box">
+                    <span class="clean-stat-label">مساحة القرص المستعادة</span>
+                    <strong id="clean-disk-freed" class="clean-stat-num text-success">+0 MB</strong>
+                </div>
+            </div>
+            <div class="clean-actions-list">
+                <h4>المهام المنجزة:</h4>
+                <ul id="clean-tasks-list">
+                    <li>تفريغ كاش الذاكرة والمخزن المؤقت (Drop Memory Caches)</li>
+                    <li>تنظيف وضغط سجلات النظام القديمة (Systemd Journal Vacuum)</li>
+                    <li>تنظيف كاش حزم التحديثات (APT Package Cache Clean)</li>
+                    <li>مسح الملفات المؤقتة القديمة في /tmp</li>
+                </ul>
+            </div>
+            <div class="modal-buttons" style="justify-content: center; margin-top: 20px;">
+                <button id="btn-close-clean-modal" class="btn btn-primary" style="min-width: 140px;">ممتاز، إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANUAL IP BAN MODAL -->
+    <div id="ban-modal" class="modal-overlay hidden">
+        <div class="modal-box glass-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3>حظر عنوان IP يدوياً</h3>
+                <button id="btn-close-ban-modal" class="modal-close-btn">&times;</button>
+            </div>
+            <form id="ban-ip-form">
+                <div class="input-group">
+                    <label for="ban-ip-input">عنوان الـ IP المراد حظره</label>
+                    <input type="text" id="ban-ip-input" placeholder="مثال: 192.168.1.50" required>
+                </div>
+                <div class="input-group">
+                    <label for="ban-reason-input">سبب الحظر الأمني</label>
+                    <input type="text" id="ban-reason-input" placeholder="مثال: نشاط مشبوه وفحص غير مصرح" value="حظر يدوي بواسطة المسؤول">
+                </div>
+                <div class="input-group">
+                    <label for="ban-duration-select">مدة الحظر</label>
+                    <select id="ban-duration-select" class="select-sm" style="width: 100%; height: 38px;">
+                        <option value="15">15 دقيقة</option>
+                        <option value="30" selected>30 دقيقة</option>
+                        <option value="60">ساعة واحدة</option>
+                        <option value="1440">24 ساعة (يوم كامل)</option>
+                        <option value="10080">أسبوع كامل</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" id="btn-cancel-ban-modal" class="btn btn-ghost">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">تطبيق الحظر فوراً 🔒</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BOT LIVE LOGS MODAL -->
+    <div id="bot-logs-modal" class="modal-overlay hidden">
+        <div class="modal-box glass-card" style="max-width: 750px; width: 90%;">
+            <div class="modal-header">
+                <h3 id="bot-logs-title">سجل مخرجات البوت (Console Output)</h3>
+                <button id="btn-close-bot-logs" class="modal-close-btn">&times;</button>
+            </div>
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span id="bot-logs-subtitle" style="font-size: 13px; color: var(--text-muted);">المسار: --</span>
+                <button id="btn-refresh-bot-logs" class="btn btn-sm btn-ghost">🔄 تحديث</button>
+            </div>
+            <pre id="bot-logs-content" style="height: 380px; overflow: auto; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; font-family: var(--font-code); font-size: 12px; line-height: 1.5; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all;" dir="ltr">جاري جلب السجلات...</pre>
+            <div class="modal-buttons" style="margin-top: 14px;">
+                <button type="button" id="btn-dismiss-bot-logs" class="btn btn-primary">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CUSTOM BOT MODAL -->
+    
+    <!-- ADVANCED ADD BOT MODAL -->
+    <div id="add-bot-modal" class="modal-overlay hidden">
+        <div class="modal-box glass-card" style="max-width: 600px; width: 90%;">
+            <div class="modal-header">
+                <h3>تسجيل تطبيق أو بوت جديد</h3>
+                <button id="btn-close-add-bot" class="modal-close-btn">&times;</button>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="tab-bot-python" class="btn btn-primary" style="flex: 1;">🐍 بايثون (Python)</button>
+                <button id="tab-bot-php" class="btn btn-ghost" style="flex: 1;">🐘 بي إتش بي (PHP)</button>
+            </div>
+
+            <!-- PYTHON FORM -->
+            <form id="add-bot-form-python">
+                <div class="input-group">
+                    <label>اسم البوت / التطبيق</label>
+                    <input type="text" id="new-bot-name-py" placeholder="مثال: Telegram Notify Bot" required>
+                </div>
+                <div class="input-group">
+                    <label>مسار ملف التشغيل (Script Path)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="new-bot-script-py" placeholder="مثال: /root/my_bot/main.py" required style="flex: 1;">
+                        <button type="button" id="btn-analyze-py" class="btn btn-primary">🔍 ذكاء</button>
+                        <button type="button" id="btn-browse-py" class="btn btn-ghost">📂</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>مسار البيئة الافتراضية (Python Venv)</label>
+                    <input type="text" id="new-bot-venv-py" value="/usr/bin/python3">
+                </div>
+                <div class="input-group">
+                    <label>مجلد العمل (Working Directory)</label>
+                    <input type="text" id="new-bot-cwd-py">
+                </div>
+                <div class="modal-buttons" style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ وتسجيل البوت</button>
+                </div>
+            </form>
+
+            <!-- PHP FORM -->
+            <form id="add-bot-form-php" style="display: none;">
+                <div class="input-group">
+                    <label>اسم البوت</label>
+                    <input type="text" id="new-bot-name-php" placeholder="مثال: PHP Webhook Bot" required>
+                </div>
+                <div class="input-group">
+                    <label>مسار الملف الأساسي للبوت</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="new-bot-script-php" placeholder="/root/shop/bot.php" required style="flex: 1;"><button type="button" id="btn-browse-php" class="btn btn-ghost" title="تصفح وتحديد الملف">📂</button>
+                        <button type="button" id="btn-analyze-php" class="btn btn-ghost">🔍 فحص الملف</button>
+                    </div>
+                </div>
+                
+                <div id="php-analysis-result" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #34d399; font-size: 13px;">
+                    <!-- result here -->
+                </div>
+
+                <div id="php-mode-selector" class="input-group" style="display: none;">
+                    <label>اختر طريقة التشغيل المفضلة</label>
+                    <select id="php-run-mode">
+                        <option value="webhook">تشغيل بنظام Webhook (الأسرع والأفضل)</option>
+                        <option value="polling">تشغيل بنظام Polling (في الخلفية)</option>
+                    </select>
+                </div>
+
+                <div id="php-webhook-fields" style="display: none;">
+                    <div class="input-group">
+                        <label>توكن البوت (Bot Token)</label>
+                        <input type="text" id="php-bot-token" placeholder="123456:ABC...">
+                    </div>
+                    <div class="input-group">
+                        <label>رابط الويبهوك (Webhook URL)</label>
+                        <input type="text" id="php-bot-url" placeholder="https://domain.com/bot.php">
+                    </div>
+                </div>
+
+                <div class="modal-buttons" style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ وتشغيل البوت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MINI FILE PICKER MODAL -->
+    <div id="modal-file-picker" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-box glass-card" style="max-width: 500px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>📂 تصفح وتحديد الملف</h3>
+                <button id="btn-close-file-picker" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="input-group" style="margin-bottom: 10px;">
+                <input type="text" id="file-picker-path" value="/root" readonly style="background: rgba(0,0,0,0.3); cursor: pointer;">
+            </div>
+            <div id="file-picker-list" style="overflow-y: auto; flex: 1; min-height: 250px; background: rgba(0,0,0,0.15); border-radius: 6px; padding: 5px;">
+                <!-- Files will load here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- CDN SCRIPTS -->
+    <!-- Xterm.js & Addons -->
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-unicode11@0.8.0/lib/addon-unicode11.min.js"></script>
+
+    <!-- Ace Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ext-language_tools.js"></script>
+
+    <!-- Custom Arabic Reshaper & BiDi -->
+    <script src="/static/arabic-reshaper.js?v=11.0"></script>
+
+    <!-- Global Core Helpers -->
+    <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    </script>
+
+    <!-- Main Client JS -->
+    <script src="/static/i18n.js"></script>
+    <script src="/static/app.v2.js?v=20260828_11"></script>
+    <script src="/static/bots_advanced.js?v=20260828_11"></script>
+</body>
+</html>
