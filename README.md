@@ -8,7 +8,7 @@
 
 An advanced, all-in-one platform for managing Linux servers via the browser. Built with **FastAPI**, **Vanilla JS (Glassmorphism)**, and **Xterm.js**, offering unparalleled performance, security, and unique features like intelligent Arabic (RTL) text rendering in the terminal.
 
-![Main Dashboard](assets/dashboard.jpg)
+![Main Dashboard](assets/login.jpg)
 
 ## ✨ Features
 
