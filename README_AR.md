@@ -6,7 +6,7 @@
 [عربي 🇸🇦](README_AR.md) | [English 🇬🇧](README.md)
 
 > **⚠️ ملاحظة:** تم إضافة الصور والشاشات قريباً.
-> ![لوحة التحكم الرئيسية](assets/dashboard.png)
+> ![لوحة التحكم الرئيسية](assets/login.jpg)
 
 
 ## Server Console, Security Shield & Application Management Platform
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-![مدير البوتات](assets/bots_manager.png)
+![مدير البوتات](assets/bots_manager.jpg)
 
 #### 🤖 2. مدير البوتات والتطبيقات الذكي (Bots & Python Apps Manager)
 1. **الرصد التلقائي للخدمات:**
