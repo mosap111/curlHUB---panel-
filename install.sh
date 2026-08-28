@@ -23,21 +23,21 @@ echo -e "${BLUE}🚀 بدء تثبيت لوحة تحكم السيرفر (curlHUB
 # 2. تحديث النظام وتثبيت الحزم الأساسية
 echo -e "${YELLOW}[1/6] تحديث الحزم وتثبيت المتطلبات الأساسية (Nginx, Python, Fail2ban)...${RESET}"
 apt-get update -y
-apt-get install -y python3 python3-venv python3-pip nginx fail2ban ufw sqlite3 curl git psmisc
+apt-get install -y python3 python3-venv python3-pip nginx fail2ban ufw sqlite3 curl git psmisc php-cli php-cgi php-curl
 
 # 3. إعداد مسار المشروع
-# (لأغراض النشر المفتوح، استبدل النسخ برابط الاستنساخ من GitHub)
-INSTALL_DIR="/opt/server_panel"
+INSTALL_DIR="/opt/curlHUB"
+REPO_URL="https://github.com/mosap111/curlHUB---panel-.git"
 
-echo -e "${YELLOW}[2/6] إعداد مسار ومجلدات المشروع...${RESET}"
+echo -e "${YELLOW}[2/6] تحميل المشروع من GitHub...${RESET}"
 if [ -d "$INSTALL_DIR" ]; then
-    echo -e "المجلد موجود مسبقاً في ${INSTALL_DIR}."
+    echo -e "المجلد موجود مسبقاً، سيتم تحديثه..."
+    cd $INSTALL_DIR
+    git pull
 else
-    # git clone https://github.com/USERNAME/server_panel.git $INSTALL_DIR
-    cp -r /root/server_panel $INSTALL_DIR 2>/dev/null || echo -e "${RED}تحذير: المسار الأصلي غير موجود.${RESET}"
+    git clone $REPO_URL $INSTALL_DIR
+    cd $INSTALL_DIR
 fi
-
-cd $INSTALL_DIR
 
 # 4. إعداد البيئة الافتراضية لبايثون
 echo -e "${YELLOW}[3/6] إعداد بيئة بايثون وتثبيت المكتبات...${RESET}"
@@ -110,7 +110,7 @@ ufw allow 22/tcp
 systemctl enable fail2ban
 systemctl start fail2ban
 
-SERVER_IP=$(curl -s ifconfig.me || echo "SERVER_IP")
+SERVER_IP=$(curl -s ifconfig.me || echo "YOUR_SERVER_IP")
 
 echo -e "${GREEN}====================================================${RESET}"
 echo -e "${GREEN}✅ تم تثبيت وتشغيل لوحة التحكم بنجاح!${RESET}"

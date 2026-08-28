@@ -17,7 +17,7 @@
 
 منصة متكاملة ومتقدمة لإدارة وخوادم لينكس سحابياً عبر المتصفح بأعلى مستويات الأداء والأمان وسلاسة الاستخدام، مع دعم استثنائي للغة العربية في الطرفية، وتحصين دفاعي شامل ضد كافة أنواع الهجمات والتخمين.
 
-* **عنوان اللوحة:** [http://code.yemensmm.me](http://code.yemensmm.me) (أو محلياً عبر المنفذ `8090`).
+* **عنوان اللوحة:** [http://YOUR_SERVER_IP](http://YOUR_SERVER_IP) (أو محلياً عبر المنفذ `8090`).
 * **المسار البرمجي في السيرفر:** `/root/server_panel`
 * **المكونات الأساسية:**
   * **الخلفية البرمجية (Backend):** Python 3.13, FastAPI, Uvicorn, Asyncio, PTY (Pseudo-Terminal Engine), Psutil, SQLite3, Fail2Ban / UFW Integration.
@@ -199,8 +199,8 @@ journalctl -u server-panel -f
 لتثبيت اللوحة على سيرفر أوبونتو أو ديبيان جديد، قم بتشغيل الأمر التالي بصلاحيات الروت:
 
 ```bash
-git clone https://github.com/USERNAME/server_panel.git /opt/server_panel
-cd /opt/server_panel
+git clone https://github.com/mosap111/curlHUB---panel-.git /opt/curlHUB
+cd /opt/curlHUB
 chmod +x install.sh
 sudo ./install.sh
 ```

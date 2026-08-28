@@ -29,8 +29,8 @@ An advanced, all-in-one platform for managing Linux servers via the browser. Bui
 Run the following commands as `root` on an Ubuntu/Debian server:
 
 ```bash
-git clone https://github.com/USERNAME/server_panel.git /opt/server_panel
-cd /opt/server_panel
+git clone https://github.com/mosap111/curlHUB---panel-.git /opt/curlHUB
+cd /opt/curlHUB
 chmod +x install.sh
 sudo ./install.sh
 ```
