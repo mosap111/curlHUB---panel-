@@ -28,11 +28,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # --- CONFIG & AUTH ---
-CONFIG_FILE = Path("/root/server_panel/config.json")
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_FILE = BASE_DIR / "config.json"
 
 import json
 
-SESSION_FILE = Path("/root/server_panel/sessions.json")
+SESSION_FILE = BASE_DIR / "sessions.json"
 SESSION_STORE = {}
 
 def load_sessions():
@@ -1866,7 +1867,7 @@ async def register_custom_bot(req: BotRegisterRequest, sess: dict = Depends(veri
 # 💾 3. BACKUP & RESTORE MANAGER API
 # ==============================================================================
 
-BACKUP_DIR = Path("/root/server_panel/backups")
+BACKUP_DIR = BASE_DIR / "backups"
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
 class BackupCreateRequest(BaseModel):
@@ -1899,7 +1900,7 @@ async def create_backup(req: BackupCreateRequest, sess: dict = Depends(verify_se
     preset_paths = {
         "shop": ("/root/shop", f"backup_shop_{timestamp}.tar.gz"),
         "yms": ("/root/yms_project", f"backup_yms_{timestamp}.tar.gz"),
-        "server_panel": ("/root/server_panel", f"backup_panel_{timestamp}.tar.gz"),
+        "server_panel": (str(BASE_DIR), f"backup_panel_{timestamp}.tar.gz"),
     }
     
     if req.preset == "databases":
@@ -1946,7 +1947,7 @@ async def delete_backup(req: dict, sess: dict = Depends(verify_session)):
     if not filepath or not Path(filepath).exists():
         raise HTTPException(status_code=404, detail="الملف غير موجود")
     p = Path(filepath).resolve()
-    if not (str(p).startswith("/root/server_panel/backups") or str(p).startswith("/root/shop-backups")):
+    if not (str(p).startswith(str(BACKUP_DIR.resolve())) or str(p).startswith("/root/shop-backups")):
         raise HTTPException(status_code=403, detail="غير مصرح بحذف هذا الملف")
     p.unlink()
     return {"status": "success", "message": "تم حذف النسخة الاحتياطية بنجاح"}
@@ -1956,7 +1957,7 @@ async def download_backup(file: str, token: Optional[str] = None):
     if not token or token not in SESSION_STORE:
         raise HTTPException(status_code=401, detail="غير مصرح به")
     p = Path(file).resolve()
-    if not p.exists() or not (str(p).startswith("/root/server_panel/backups") or str(p).startswith("/root/shop-backups")):
+    if not p.exists() or not (str(p).startswith(str(BACKUP_DIR.resolve())) or str(p).startswith("/root/shop-backups")):
         raise HTTPException(status_code=404, detail="الملف غير موجود")
     return FileResponse(str(p), filename=p.name, media_type="application/octet-stream")
 
@@ -2190,11 +2191,12 @@ async def test_telegram_alert(sess: dict = Depends(verify_session)):
         raise HTTPException(status_code=500, detail="فشل إرسال التنبيه، تأكد من صحة الـ Token و Chat ID وبدء محادثة مع البوت (/start)")
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="/root/server_panel/static"), name="static")
+STATIC_DIR = BASE_DIR / "static"
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def serve_index():
-    with open("/root/server_panel/static/index.html", "r", encoding="utf-8") as f:
+    with open(str(STATIC_DIR / "index.html"), "r", encoding="utf-8") as f:
         return HTMLResponse(
             content=f.read(),
             headers={
@@ -2208,6 +2210,200 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=config.get("port", 8090), log_level="info")
 
+
+# --- DOMAINS AND SSL ---
+# --- DOMAINS AND SSL ---
+class DomainCreateRequest(BaseModel):
+    domain: str
+    type: str
+    document_root: Optional[str] = None
+    proxy_url: Optional[str] = None
+    force_https: Optional[bool] = False
+
+class DomainActionRequest(BaseModel):
+    domain: str
+
+@app.get("/api/domains/list")
+async def get_domains_list(sess: dict = Depends(verify_session)):
+    try:
+        domains = []
+        nginx_dir = Path("/etc/nginx/sites-enabled")
+        if not nginx_dir.exists():
+            return JSONResponse({"success": True, "domains": []})
+        
+        for conf_file in nginx_dir.glob("*"):
+            if conf_file.is_file() and conf_file.name != "default":
+                content = conf_file.read_text()
+                is_proxy = "proxy_pass" in content
+                
+                doc_root_match = re.search(r"root\s+([^;]+);", content)
+                doc_root = doc_root_match.group(1) if doc_root_match else None
+                
+                proxy_match = re.search(r"proxy_pass\s+([^;]+);", content)
+                proxy_url = proxy_match.group(1) if proxy_match else None
+                
+                has_ssl = "ssl_certificate" in content
+                force_https = "return 301 https://$host$request_uri;" in content or "return 301 https://$server_name$request_uri;" in content
+                
+                ssl_expiry = None
+                ssl_issuer = None
+                
+                if has_ssl:
+                    import subprocess, datetime
+                    cert_path_match = re.search(r"ssl_certificate\s+([^;]+);", content)
+                    if cert_path_match:
+                        cert_path = cert_path_match.group(1).strip()
+                        if Path(cert_path).exists():
+                            try:
+                                out = subprocess.check_output(["openssl", "x509", "-enddate", "-issuer", "-noout", "-in", cert_path], text=True)
+                                for line in out.splitlines():
+                                    if line.startswith("notAfter="):
+                                        date_str = line.split("=")[1].strip()
+                                        dt = datetime.datetime.strptime(date_str, "%b %d %H:%M:%S %Y %Z")
+                                        ssl_expiry = dt.strftime("%Y-%m-%d")
+                                    elif line.startswith("issuer="):
+                                        ssl_issuer = "Let's Encrypt" if "Let's Encrypt" in line or "O =" not in line else line.split("O =")[-1].split(",")[0].strip()
+                            except:
+                                pass
+                
+                domains.append({
+                    "domain": conf_file.name,
+                    "type": "proxy" if is_proxy else "static",
+                    "root": doc_root,
+                    "proxy_url": proxy_url,
+                    "ssl": has_ssl,
+                    "ssl_expiry": ssl_expiry,
+                    "ssl_issuer": ssl_issuer,
+                    "force_https": force_https
+                })
+        return JSONResponse({"success": True, "domains": domains})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})
+
+def generate_nginx_conf(req: DomainCreateRequest, existing_ssl_lines=None):
+    conf_lines = []
+    
+    # HTTP Server Block
+    conf_lines.append("server {")
+    conf_lines.append("    listen 80;")
+    conf_lines.append(f"    server_name {req.domain} www.{req.domain};")
+    
+    if req.force_https and existing_ssl_lines:
+        conf_lines.append("    return 301 https://$host$request_uri;")
+        conf_lines.append("}")
+        conf_lines.append("")
+        conf_lines.append("server {")
+        conf_lines.append("    listen 443 ssl;")
+        conf_lines.append(f"    server_name {req.domain} www.{req.domain};")
+        conf_lines.extend(["    " + l.strip() for l in existing_ssl_lines])
+    else:
+        # If no SSL yet but force_https requested, we can't redirect yet or it breaks validation
+        pass
+
+    if req.type == "static":
+        root = req.document_root or f"/var/www/{req.domain}"
+        Path(root).mkdir(parents=True, exist_ok=True)
+        conf_lines.append(f"    root {root};")
+        conf_lines.append("    index index.html index.php;")
+        conf_lines.append("    location / {")
+        conf_lines.append("        try_files $uri $uri/ =404;")
+        conf_lines.append("    }")
+    else:
+        proxy = req.proxy_url or "http://127.0.0.1:8080"
+        conf_lines.append("    location / {")
+        conf_lines.append(f"        proxy_pass {proxy};")
+        conf_lines.append("        proxy_set_header Host $host;")
+        conf_lines.append("        proxy_set_header X-Real-IP $remote_addr;")
+        conf_lines.append("        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;")
+        conf_lines.append("        proxy_set_header X-Forwarded-Proto $scheme;")
+        conf_lines.append("    }")
+        
+    if not req.force_https and existing_ssl_lines:
+        # If they don't want force HTTPS but have SSL, we need to make sure SSL block is there
+        # Certbot usually modifies the file directly, so this is a basic fallback
+        conf_lines.extend(["    " + l.strip() for l in existing_ssl_lines])
+        
+    conf_lines.append("}")
+    return "\n".join(conf_lines)
+
+@app.post("/api/domains/create")
+async def create_domain_config(req: DomainCreateRequest, sess: dict = Depends(verify_session)):
+    if not re.match(r"^[a-zA-Z0-9.-]+$", req.domain):
+        return JSONResponse({"success": False, "error": "اسم النطاق غير صالح"})
+        
+    avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
+    enabled_path = Path(f"/etc/nginx/sites-enabled/{req.domain}")
+    
+    conf = generate_nginx_conf(req)
+    try:
+        avail_path.write_text(conf)
+        if not enabled_path.exists():
+            enabled_path.symlink_to(avail_path)
+            
+        subprocess.run(["systemctl", "reload", "nginx"], check=True)
+        return JSONResponse({"success": True, "message": f"تمت إضافة النطاق {req.domain} بنجاح."})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})
+
+@app.post("/api/domains/edit")
+async def edit_domain_config(req: DomainCreateRequest, sess: dict = Depends(verify_session)):
+    if not re.match(r"^[a-zA-Z0-9.-]+$", req.domain):
+        return JSONResponse({"success": False, "error": "اسم النطاق غير صالح"})
+        
+    avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
+    enabled_path = Path(f"/etc/nginx/sites-enabled/{req.domain}")
+    
+    existing_ssl_lines = []
+    if avail_path.exists():
+        existing_conf = avail_path.read_text()
+        existing_ssl_lines = [line for line in existing_conf.split("\n") if "ssl_certificate" in line or "ssl_dhparam" in line or "managed by Certbot" in line or "listen 443" in line]
+    
+    conf = generate_nginx_conf(req, existing_ssl_lines)
+
+    try:
+        avail_path.write_text(conf)
+        if not enabled_path.exists():
+            enabled_path.symlink_to(avail_path)
+            
+        subprocess.run(["systemctl", "reload", "nginx"], check=True)
+        return JSONResponse({"success": True, "message": f"تم تعديل النطاق {req.domain} بنجاح."})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})
+
+@app.post("/api/domains/delete")
+async def delete_domain_config(req: DomainActionRequest, sess: dict = Depends(verify_session)):
+    avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
+    enabled_path = Path(f"/etc/nginx/sites-enabled/{req.domain}")
+    try:
+        if enabled_path.exists():
+            enabled_path.unlink()
+        if avail_path.exists():
+            avail_path.unlink()
+            
+        subprocess.run(["systemctl", "reload", "nginx"], check=True)
+        subprocess.run(["certbot", "delete", "--cert-name", req.domain, "--non-interactive"])
+        return JSONResponse({"success": True, "message": f"تم حذف النطاق {req.domain} بجميع بياناته."})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})
+
+@app.post("/api/domains/ssl")
+async def request_domain_ssl(req: DomainActionRequest, sess: dict = Depends(verify_session)):
+    try:
+        # Check if force_https is currently on, so we apply --redirect
+        avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
+        cmd = ["certbot", "--nginx", "-d", req.domain, "--non-interactive", "--agree-tos", "--register-unsafely-without-email"]
+        
+        if avail_path.exists() and "return 301 https" in avail_path.read_text():
+            cmd.append("--redirect")
+            
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            return JSONResponse({"success": True, "message": "تم إصدار/تجديد شهادة SSL بنجاح!"})
+        else:
+            err = result.stderr or result.stdout
+            return JSONResponse({"success": False, "error": f"فشل تثبيت SSL: {err}"})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})
 
 # --- PHP CGI PROXY FOR WEBHOOKS ---
 from fastapi.responses import Response
@@ -2258,3 +2454,4 @@ async def execute_php_webhook(request: Request, file_path: str):
             return Response(content=stdout)
             
     return Response(content=res_body)
+
