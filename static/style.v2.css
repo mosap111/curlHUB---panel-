@@ -1885,3 +1885,38 @@ html[dir="ltr"] .files-table td, html[dir="ltr"] .files-table th {
 html[dir="ltr"] .data-table td, html[dir="ltr"] .data-table th {
     text-align: left;
 }
+
+/* Golden Separators and Sharp Corners */
+.golden-separator {
+    border: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #fbbf24, #f59e0b, #fbbf24, transparent);
+    margin: 30px 0;
+    width: 100%;
+    opacity: 0.8;
+}
+
+.golden-corners {
+    position: relative;
+    border-radius: 0 !important; /* Sharp corners requested */
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+.golden-corners::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    pointer-events: none;
+    z-index: 10;
+    background:
+      linear-gradient(to right, #fbbf24 4px, transparent 4px) 0 0,
+      linear-gradient(to bottom, #fbbf24 4px, transparent 4px) 0 0,
+      linear-gradient(to left, #fbbf24 4px, transparent 4px) 100% 0,
+      linear-gradient(to bottom, #fbbf24 4px, transparent 4px) 100% 0,
+      linear-gradient(to right, #fbbf24 4px, transparent 4px) 0 100%,
+      linear-gradient(to top, #fbbf24 4px, transparent 4px) 0 100%,
+      linear-gradient(to left, #fbbf24 4px, transparent 4px) 100% 100%,
+      linear-gradient(to top, #fbbf24 4px, transparent 4px) 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 25px 25px;
+}
