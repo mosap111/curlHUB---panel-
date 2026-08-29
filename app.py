@@ -1873,8 +1873,6 @@ async def list_backups(sess: dict = Depends(verify_session)):
 async def create_backup(req: BackupCreateRequest, sess: dict = Depends(verify_session)):
     timestamp = time.strftime('%Y%m%d_%H%M%S')
     preset_paths = {
-        "shop": ("/root/shop", f"backup_shop_{timestamp}.tar.gz"),
-        "yms": ("/root/yms_project", f"backup_yms_{timestamp}.tar.gz"),
         "server_panel": (str(BASE_DIR), f"backup_panel_{timestamp}.tar.gz"),
     }
     

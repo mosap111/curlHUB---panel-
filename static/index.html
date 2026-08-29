@@ -306,6 +306,14 @@
                     </svg>
                     <span>سجلات النظام (Logs)</span>
                 </button>
+                <button class="nav-tab" data-tab="tab-domains">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>النطاقات والشهادات</span>
+                </button>
                 <button class="nav-tab" data-tab="tab-settings">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -1148,23 +1156,7 @@
 
                     <!-- Quick Backup Presets -->
                     <div class="backup-presets-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
-                        <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-shop">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <span style="font-size: 24px;">🛍️</span>
-                                <strong style="color: var(--text-primary);">بوت المتجر (Shop)</strong>
-                            </div>
-                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">نسخ كود وإعدادات بوت المتجر</p>
-                            <button class="btn btn-sm btn-primary" style="width: 100%;">📦 أخذ نسخة الآن</button>
-                        </div>
-
-                        <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-yms">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <span style="font-size: 24px;">🤖</span>
-                                <strong style="color: var(--text-primary);">مشروع YMS</strong>
-                            </div>
-                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">نسخ مشروع وبوتات YMS</p>
-                            <button class="btn btn-sm btn-primary" style="width: 100%;">📦 أخذ نسخة الآن</button>
-                        </div>
+                        <!-- Removed private backup presets -->
 
                         <div class="kpi-card glass-card" style="padding: 16px; cursor: pointer;" id="preset-backup-db">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -1339,6 +1331,58 @@
             </section>
 
             <!-- TAB 4: SETTINGS -->
+            
+            <!-- TAB: DOMAINS -->
+            <section id="tab-domains" class="tab-pane">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            إدارة النطاقات والشهادات (Domains & SSL)
+                        </div>
+                        <button class="btn btn-primary" onclick="showDomainModal()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            إضافة نطاق جديد
+                        </button>
+                    </div>
+                    
+                    <!-- Advanced Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 20px 0 20px;">
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
+                            <span style="color: #94a3b8; font-size: 13px; margin-bottom: 5px;">إجمالي النطاقات</span>
+                            <span id="stat-total-domains" style="font-size: 24px; font-weight: bold; color: #e2e8f0;">0</span>
+                        </div>
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px;">
+                            <span style="color: #4ade80; font-size: 13px; margin-bottom: 5px;">نطاقات محمية (SSL)</span>
+                            <span id="stat-secured-domains" style="font-size: 24px; font-weight: bold; color: #4ade80;">0</span>
+                        </div>
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.2); border-radius: 12px;">
+                            <span style="color: #facc15; font-size: 13px; margin-bottom: 5px;">شهادات تنتهي قريباً</span>
+                            <span id="stat-expiring-domains" style="font-size: 24px; font-weight: bold; color: #facc15;">0</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="glass-table">
+                                <thead>
+                                    <tr>
+                                        <th>النطاق</th>
+                                        <th>النوع</th>
+                                        <th>المسار / التوجيه</th>
+                                        <th>حالة SSL</th>
+                                        <th style="text-align: left;">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="domains-table-body">
+                                    <tr><td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">جاري تحميل النطاقات...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section id="tab-settings" class="tab-pane">
                 <div class="settings-container">
                     
@@ -1455,7 +1499,18 @@
             <div class="input-group">
                 <label id="modal-label" for="modal-input">الاسم:</label>
                 <input type="text" id="modal-input" placeholder="...">
-            </div>
+            
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <label class="switch" style="margin:0;">
+                        <input type="checkbox" id="domain-force-https">
+                        <span class="slider round"></span>
+                    </label>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #e2e8f0; font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
+                        <span style="color: #64748b; font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
+                    </div>
+                </div>
+</div>
             <div class="modal-buttons">
                 <button id="btn-modal-cancel" class="btn btn-ghost">إلغاء</button>
                 <button id="btn-modal-confirm" class="btn btn-primary">تأكيد</button>
@@ -1493,7 +1548,18 @@
                     <li>تنظيف كاش حزم التحديثات (APT Package Cache Clean)</li>
                     <li>مسح الملفات المؤقتة القديمة في /tmp</li>
                 </ul>
-            </div>
+            
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <label class="switch" style="margin:0;">
+                        <input type="checkbox" id="domain-force-https">
+                        <span class="slider round"></span>
+                    </label>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #e2e8f0; font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
+                        <span style="color: #64748b; font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
+                    </div>
+                </div>
+</div>
             <div class="modal-buttons" style="justify-content: center; margin-top: 20px;">
                 <button id="btn-close-clean-modal" class="btn btn-primary" style="min-width: 140px;">ممتاز، إغلاق</button>
             </div>
@@ -1694,7 +1760,55 @@
 
     <!-- Main Client JS -->
     <script src="/static/i18n.js"></script>
-    <script src="/static/app.v2.js?v=20260828_11"></script>
+    <script src="/static/app.v2.js?v=20260829_01"></script>
     <script src="/static/bots_advanced.js?v=20260828_11"></script>
+
+    <!-- Domain Add Modal -->
+    <div id="modal-domain" class="modal-overlay hidden">
+        <div class="modal-box glass-card" style="max-width: 500px; width: 90%;">
+            <div class="modal-header">
+                <h3>إضافة نطاق جديد</h3>
+                <button class="modal-close-btn" onclick="closeDomainModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">اسم النطاق (مثال: example.com)</label>
+                    <input type="text" id="domain-name" class="form-control modern-input" placeholder="example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">نوع النطاق</label>
+                    <select id="domain-type" class="form-control modern-input" onchange="toggleDomainTypeFields()" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                        <option value="static">موقع ثابت / PHP (ملفات)</option>
+                        <option value="proxy">بروكسي (توجيه لمنفذ، مثل البوتات)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="domain-static-fields" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">مسار الملفات (اختياري)</label>
+                    <input type="text" id="domain-root" class="form-control modern-input" placeholder="/var/www/example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                </div>
+                <div class="form-group" id="domain-proxy-fields" style="margin-bottom: 15px; display: none;">
+                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">رابط التوجيه</label>
+                    <input type="text" id="domain-proxy" class="form-control modern-input" placeholder="http://127.0.0.1:8080" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                </div>
+            
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <label class="switch" style="margin:0;">
+                        <input type="checkbox" id="domain-force-https">
+                        <span class="slider round"></span>
+                    </label>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #e2e8f0; font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
+                        <span style="color: #64748b; font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
+                    </div>
+                </div>
+</div>
+            <div class="modal-buttons" style="padding: 15px 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-ghost" onclick="closeDomainModal()">إلغاء</button>
+                <button class="btn btn-primary" onclick="submitDomain()">حفظ النطاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/domains.js?v=20260829_06"></script>
 </body>
 </html>

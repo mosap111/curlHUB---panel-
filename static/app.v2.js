@@ -2141,10 +2141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Preset click listeners
-    const pShop = document.getElementById('preset-backup-shop');
-    if (pShop) pShop.addEventListener('click', () => window.createPresetBackup('shop'));
-    const pYms = document.getElementById('preset-backup-yms');
-    if (pYms) pYms.addEventListener('click', () => window.createPresetBackup('yms'));
+    // Removed shop and yms
     const pDb = document.getElementById('preset-backup-db');
     if (pDb) pDb.addEventListener('click', () => window.createPresetBackup('databases'));
     const pPanel = document.getElementById('preset-backup-panel');
@@ -2440,28 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
 });
 
-// --- THEME TOGGLE LOGIC ---
-document.addEventListener('DOMContentLoaded', () => {
-    const themeToggleBtns = document.querySelectorAll('#theme-toggle-btn, .theme-toggle-btn');
-    if(themeToggleBtns.length > 0) {
-        // Load preference
-        const currentTheme = localStorage.getItem('theme') || 'dark';
-        if (currentTheme === 'light') {
-            document.body.classList.add('light-theme');
-        }
 
-        themeToggleBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
-                let theme = 'dark';
-                if (document.body.classList.contains('light-theme')) {
-                    theme = 'light';
-                }
-                localStorage.setItem('theme', theme);
-            });
-        });
-    }
-});
 
 // --- MOBILE MENU TOGGLE ---
 function initMobileMenu() {
