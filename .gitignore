@@ -21,3 +21,14 @@ backups/
 
 # Session Data
 sessions.json
+
+# Developer & Temporary Scripts
+*trans*.py
+add_*.py
+extract_*.py
+find_*.py
+fix_*.py
+get_*.py
+make_*.py
+translate*.py
+update_*.py
