@@ -1334,39 +1334,35 @@
             
             <!-- TAB: DOMAINS -->
             <section id="tab-domains" class="tab-pane">
-                <div class="glass-card golden-corners" style="padding-bottom: 10px;">
-                    <div class="card-header" style="border-bottom: none; padding-bottom: 5px;">
+                <div class="glass-card" style="padding-bottom: 10px;">
+                    <div class="card-header">
                         <div class="card-title" style="color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);">
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                             إدارة النطاقات والشهادات (Domains & SSL)
                         </div>
-                        <button class="btn btn-primary" onclick="showDomainModal()" style="background: linear-gradient(45deg, #d97706, #fbbf24); color: #000; font-weight: bold; border: none;">
+                        <button class="btn btn-primary" onclick="showDomainModal()">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             إضافة نطاق جديد
                         </button>
                     </div>
                     
-                    <hr class="golden-separator" style="margin-top: 10px; margin-bottom: 20px;">
-                    
                     <!-- Advanced Stats -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 0 20px;">
-                        <div class="stat-pill golden-corners" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-subtle);">
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-subtle);">
                             <span style="color: var(--text-secondary); font-size: 13px; margin-bottom: 5px;">إجمالي النطاقات</span>
                             <span id="stat-total-domains" style="font-size: 24px; font-weight: bold; color: var(--text-primary);">0</span>
                         </div>
-                        <div class="stat-pill golden-corners" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(34,197,94,0.05);">
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(34,197,94,0.05);">
                             <span style="color: var(--text-success); font-size: 13px; margin-bottom: 5px;">نطاقات محمية (SSL)</span>
                             <span id="stat-secured-domains" style="font-size: 24px; font-weight: bold; color: var(--text-success);">0</span>
                         </div>
-                        <div class="stat-pill golden-corners" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(234,179,8,0.05);">
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(234,179,8,0.05);">
                             <span style="color: var(--text-warning); font-size: 13px; margin-bottom: 5px;">شهادات تنتهي قريباً</span>
                             <span id="stat-expiring-domains" style="font-size: 24px; font-weight: bold; color: var(--text-warning);">0</span>
                         </div>
                     </div>
-                    
-                    <hr class="golden-separator" style="margin-top: 25px; margin-bottom: 5px;">
 
-                    <div class="card-body">
+                    <div class="card-body" style="padding-top: 20px;">
                         <div class="table-responsive">
                             <table class="glass-table">
                                 <thead>

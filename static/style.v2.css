@@ -105,8 +105,28 @@ body {
     background: var(--bg-card);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    border-radius: 0 !important;
+    position: relative;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    pointer-events: none;
+    z-index: 10;
+    background:
+      linear-gradient(to right, #fbbf24 6px, transparent 6px) 0 0,
+      linear-gradient(to bottom, #fbbf24 6px, transparent 6px) 0 0,
+      linear-gradient(to left, #fbbf24 6px, transparent 6px) 100% 0,
+      linear-gradient(to bottom, #fbbf24 6px, transparent 6px) 100% 0,
+      linear-gradient(to right, #fbbf24 6px, transparent 6px) 0 100%,
+      linear-gradient(to top, #fbbf24 6px, transparent 6px) 0 100%,
+      linear-gradient(to left, #fbbf24 6px, transparent 6px) 100% 100%,
+      linear-gradient(to top, #fbbf24 6px, transparent 6px) 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 35px 35px; /* Thicker, longer corner lines */
 }
 
 .glass-nav {
@@ -949,7 +969,9 @@ input:checked + .slider:before {
     align-items: center;
     gap: 10px;
     color: var(--accent-primary);
-    margin-bottom: 8px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #fbbf24 !important; /* Thick golden line acting as separator */
 }
 .card-header h3 {
     font-size: 18px;
@@ -1896,27 +1918,4 @@ html[dir="ltr"] .data-table td, html[dir="ltr"] .data-table th {
     opacity: 0.8;
 }
 
-.golden-corners {
-    position: relative;
-    border-radius: 0 !important; /* Sharp corners requested */
-    border: 1px solid rgba(245, 158, 11, 0.3) !important;
-}
-
-.golden-corners::before {
-    content: '';
-    position: absolute;
-    top: -2px; left: -2px; right: -2px; bottom: -2px;
-    pointer-events: none;
-    z-index: 10;
-    background:
-      linear-gradient(to right, #fbbf24 4px, transparent 4px) 0 0,
-      linear-gradient(to bottom, #fbbf24 4px, transparent 4px) 0 0,
-      linear-gradient(to left, #fbbf24 4px, transparent 4px) 100% 0,
-      linear-gradient(to bottom, #fbbf24 4px, transparent 4px) 100% 0,
-      linear-gradient(to right, #fbbf24 4px, transparent 4px) 0 100%,
-      linear-gradient(to top, #fbbf24 4px, transparent 4px) 0 100%,
-      linear-gradient(to left, #fbbf24 4px, transparent 4px) 100% 100%,
-      linear-gradient(to top, #fbbf24 4px, transparent 4px) 100% 100%;
-    background-repeat: no-repeat;
-    background-size: 25px 25px;
-}
+/* Golden corners have been applied to .glass-card globally */
