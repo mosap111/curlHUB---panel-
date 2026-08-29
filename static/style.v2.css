@@ -17,26 +17,15 @@
     --accent-success: #34d399;
     --accent-warning: #fbbf24;
     --accent-danger: #f87171;
-    --accent-primary: var(--accent-primary);
-    --accent-success: #16a34a;
-    --accent-warning: #d97706;
-    --accent-danger: #dc2626;
-
-    --accent-primary: var(--accent-primary);
-    --accent-success: var(--accent-success);
-    --accent-warning: var(--accent-warning);
-    --accent-danger: var(--accent-danger);
-
-    
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    
-    --accent-primary: var(--accent-primary);
-    --accent-primary-hover: #0369a1;
-    --accent-success: var(--accent-success);
-    --accent-warning: var(--accent-warning);
-    --accent-danger: var(--accent-danger);
+
+    /* Semantic Text Colors for Dark Theme */
+    --text-info: #38bdf8;
+    --text-success: #34d399;
+    --text-warning: #fbbf24;
+    --text-danger: #f87171;
     
     --font-ui: 'Cairo', system-ui, -apple-system, sans-serif;
     --font-code: 'Fira Code', 'JetBrains Mono', monospace;
@@ -1662,6 +1651,12 @@ body.light-theme {
     --text-primary: #0f172a;
     --text-secondary: #334155;
     --text-muted: #64748b;
+
+    /* Semantic Text Colors for Light Theme */
+    --text-info: #0284c7;
+    --text-success: #16a34a;
+    --text-warning: #d97706;
+    --text-danger: #dc2626;
 }
 
 body.light-theme ::-webkit-scrollbar-track {

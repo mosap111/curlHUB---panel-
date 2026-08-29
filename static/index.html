@@ -156,8 +156,8 @@
         .remember-label {
             display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cbd5e1; user-select: none;
         }
-        .remember-label input { accent-color: #38bdf8; width: 16px; height: 16px; cursor: pointer; }
-        .forgot-link { color: #38bdf8; text-decoration: none; transition: 0.2s; }
+        .remember-label input { accent-color: var(--text-info); width: 16px; height: 16px; cursor: pointer; }
+        .forgot-link { color: var(--text-info); text-decoration: none; transition: 0.2s; }
         .forgot-link:hover { color: #7dd3fc; }
         .modern-login-btn {
             border-radius: 8px !important; padding: 12px !important;
@@ -455,9 +455,9 @@
                                 <span>مدير البوتات والتطبيقات الذكي (Bots & Python Apps Manager)</span>
                             </div>
                             <div class="sys-subinfo">
-                                <span>البوتات المسجلة: <strong id="bots-total-count" style="color: #38bdf8;">0</strong></span>
-                                <span>النشطة حالياً: <strong id="bots-running-count" style="color: #34d399;">0 شغال</strong></span>
-                                <span>استهلاك الرام الإجمالي: <strong id="bots-ram-count" style="color: #fbbf24;">0 MB</strong></span>
+                                <span>البوتات المسجلة: <strong id="bots-total-count" style="color: var(--text-info);">0</strong></span>
+                                <span>النشطة حالياً: <strong id="bots-running-count" style="color: var(--text-success);">0 شغال</strong></span>
+                                <span>استهلاك الرام الإجمالي: <strong id="bots-ram-count" style="color: var(--text-warning);">0 MB</strong></span>
                             </div>
                         </div>
                         <div class="banner-actions">
@@ -761,14 +761,14 @@
                     <!-- Security Top Banner -->
                     <div class="monitor-top-banner glass-card" style="border-left: 4px solid #10b981;">
                         <div class="banner-info">
-                            <div class="sys-badge" style="color: #34d399;">
+                            <div class="sys-badge" style="color: var(--text-success);">
                                 <span class="badge-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
                                 <span>درع الأمان والتحصين الشامل (Active Defense & Honeypots)</span>
                             </div>
                             <div class="sys-subinfo">
-                                <span>حالة الدرع: <strong style="color: #34d399;">نشط ويعمل 100% 🛡️</strong></span>
-                                <span>مصائد المسارات (Honeypots): <strong style="color: #38bdf8;">21 مسار فخ نشط 🪤</strong></span>
-                                <span>حظر التخمين التلقائي: <strong style="color: #f59e0b;">مفعل (5 محاولات = حظر 15 دقيقة) 🔒</strong></span>
+                                <span>حالة الدرع: <strong style="color: var(--text-success);">نشط ويعمل 100% 🛡️</strong></span>
+                                <span>مصائد المسارات (Honeypots): <strong style="color: var(--text-info);">21 مسار فخ نشط 🪤</strong></span>
+                                <span>حظر التخمين التلقائي: <strong style="color: var(--text-warning);">مفعل (5 محاولات = حظر 15 دقيقة) 🔒</strong></span>
                             </div>
                         </div>
                         <div class="banner-actions">
@@ -798,7 +798,7 @@
                     <!-- Security KPI Cards -->
                     <div class="mon-kpi-grid">
                         <div class="kpi-card glass-card">
-                            <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">
+                            <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--text-danger);">
                                 <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
@@ -815,7 +815,7 @@
                         </div>
 
                         <div class="kpi-card glass-card">
-                            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--text-warning);">
                                 <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -832,7 +832,7 @@
                         </div>
 
                         <div class="kpi-card glass-card">
-                            <div class="kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                            <div class="kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--text-info);">
                                 <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
                                     <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                                     <polyline points="2 17 12 22 22 17"></polyline>
@@ -871,7 +871,7 @@
                     <div class="monitor-section glass-card">
                         <div class="section-title-row">
                             <div class="section-title-wrap">
-                                <span class="sec-title-icon" style="color: #ef4444;">🔒</span>
+                                <span class="sec-title-icon" style="color: var(--text-danger);">🔒</span>
                                 <h3 class="section-title">قائمة عناوين الـ IP المحظورة حالياً (Active Banned IPs)</h3>
                                 <span class="badge-count" id="sec-banned-badge">0 محظور</span>
                             </div>
@@ -898,7 +898,7 @@
                     <div class="monitor-section glass-card">
                         <div class="section-title-row">
                             <div class="section-title-wrap">
-                                <span class="sec-title-icon" style="color: #38bdf8;">📋</span>
+                                <span class="sec-title-icon" style="color: var(--text-info);">📋</span>
                                 <h3 class="section-title">سجل الهجمات ومحاولات التخمين والاختراق اللحظي (Live Attack Logs)</h3>
                                 <span class="badge-count" id="sec-logs-badge">0 حدث</span>
                             </div>
@@ -942,9 +942,9 @@
                     <div class="monitor-section glass-card">
                         <div class="section-title-row">
                             <div class="section-title-wrap">
-                                <span class="sec-title-icon" style="color: #10b981;">🛡️</span>
+                                <span class="sec-title-icon" style="color: var(--text-success);">🛡️</span>
                                 <h3 class="section-title">حالة جدار الحماية وسجون Fail2Ban في النظام (System Fail2Ban & UFW)</h3>
-                                <span class="badge-count" id="fail2ban-jails-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">5 سجون نشطة</span>
+                                <span class="badge-count" id="fail2ban-jails-badge" style="background: rgba(16, 185, 129, 0.2); color: var(--text-success);">5 سجون نشطة</span>
                             </div>
                         </div>
                         <div class="f2b-grid-container" id="f2b-jails-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
@@ -1140,7 +1140,7 @@
                                 <span>مدير النسخ الاحتياطي والاستعادة الفورية (Backups & Disaster Recovery)</span>
                             </div>
                             <div class="sys-subinfo">
-                                <span>النسخ المتوفرة: <strong id="backups-count-stat" style="color: #38bdf8;">0</strong></span>
+                                <span>النسخ المتوفرة: <strong id="backups-count-stat" style="color: var(--text-info);">0</strong></span>
                                 <span>المجلد الافتراضي: <strong style="color: #94a3b8;">/root/server_panel/backups</strong></span>
                             </div>
                         </div>
@@ -1181,7 +1181,7 @@
                     <div class="monitor-section glass-card">
                         <div class="section-title-row">
                             <div class="section-title-wrap">
-                                <span class="sec-title-icon" style="color: #38bdf8;">📂</span>
+                                <span class="sec-title-icon" style="color: var(--text-info);">📂</span>
                                 <h3 class="section-title">ملفات النسخ الاحتياطي المحفوظة</h3>
                             </div>
                         </div>
@@ -1256,7 +1256,7 @@
                                         <span>⚡ تنفيذ (Run Query)</span>
                                     </button>
                                 </div>
-                                <textarea id="db-query-input" style="width: 100%; height: 90px; background: var(--bg-input); color: #38bdf8; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; font-family: var(--font-code); font-size: 13px; resize: vertical;" placeholder="SELECT * FROM table_name LIMIT 50;"></textarea>
+                                <textarea id="db-query-input" style="width: 100%; height: 90px; background: var(--bg-input); color: var(--text-info); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; font-family: var(--font-code); font-size: 13px; resize: vertical;" placeholder="SELECT * FROM table_name LIMIT 50;"></textarea>
                             </div>
 
                             <!-- Results Container -->
@@ -1353,12 +1353,12 @@
                             <span id="stat-total-domains" style="font-size: 24px; font-weight: bold; color: #e2e8f0;">0</span>
                         </div>
                         <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px;">
-                            <span style="color: #4ade80; font-size: 13px; margin-bottom: 5px;">نطاقات محمية (SSL)</span>
-                            <span id="stat-secured-domains" style="font-size: 24px; font-weight: bold; color: #4ade80;">0</span>
+                            <span style="color: var(--text-success); font-size: 13px; margin-bottom: 5px;">نطاقات محمية (SSL)</span>
+                            <span id="stat-secured-domains" style="font-size: 24px; font-weight: bold; color: var(--text-success);">0</span>
                         </div>
                         <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.2); border-radius: 12px;">
-                            <span style="color: #facc15; font-size: 13px; margin-bottom: 5px;">شهادات تنتهي قريباً</span>
-                            <span id="stat-expiring-domains" style="font-size: 24px; font-weight: bold; color: #facc15;">0</span>
+                            <span style="color: var(--text-warning); font-size: 13px; margin-bottom: 5px;">شهادات تنتهي قريباً</span>
+                            <span id="stat-expiring-domains" style="font-size: 24px; font-weight: bold; color: var(--text-warning);">0</span>
                         </div>
                     </div>
 
@@ -1482,7 +1482,7 @@
                             </div>
                             <div class="info-row">
                                 <span>دعم اللغة العربية:</span>
-                                <strong style="color: #10b981;">خوارزمية BiDi & Reshaping مفعلة</strong>
+                                <strong style="color: var(--text-success);">خوارزمية BiDi & Reshaping مفعلة</strong>
                             </div>
                         </div>
                     </div>
@@ -1674,7 +1674,7 @@
                     </div>
                 </div>
                 
-                <div id="php-analysis-result" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #34d399; font-size: 13px;">
+                <div id="php-analysis-result" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: var(--text-success); font-size: 13px;">
                     <!-- result here -->
                 </div>
 
