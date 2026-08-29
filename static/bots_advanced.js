@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     pyVenv.value = "/usr/bin/python3";
                     if (res.has_requirements) {
-                        if (confirm("تم العثور على ملف requirements.txt ولكن لا توجد بيئة مخصصة (venv). هل ترغب في إنشاء بيئة افتراضية وتثبيت المكاتب تلقائياً الآن؟ (قد يستغرق ذلك دقيقة)")) {
+                        if ((await window.customConfirm("تم العثور على ملف requirements.txt ولكن لا توجد بيئة مخصصة (venv)). هل ترغب في إنشاء بيئة افتراضية وتثبيت المكاتب تلقائياً الآن؟ (قد يستغرق ذلك دقيقة)")) {
                             btnAnalyzePy.textContent = "⏳ جاري التثبيت...";
                             try {
                                 const setupRes = await window.apiRequest("/api/bots/setup_venv", {

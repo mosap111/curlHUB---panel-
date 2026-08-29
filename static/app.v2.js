@@ -1,3 +1,31 @@
+
+window.customConfirm = function(message, title = "تأكيد الإجراء") {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("confirm-modal");
+        const titleEl = document.getElementById("confirm-modal-title");
+        const msgEl = document.getElementById("confirm-modal-message");
+        const btnCancel = document.getElementById("btn-confirm-cancel");
+        const btnOk = document.getElementById("btn-confirm-ok");
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        
+        modal.classList.remove("hidden");
+
+        const cleanup = () => {
+            modal.classList.add("hidden");
+            btnCancel.removeEventListener("click", onCancel);
+            btnOk.removeEventListener("click", onOk);
+        };
+
+        const onCancel = () => { cleanup(); resolve(false); };
+        const onOk = () => { cleanup(); resolve(true); };
+
+        btnCancel.addEventListener("click", onCancel);
+        btnOk.addEventListener("click", onOk);
+    });
+};
+
 /**
  * Server Console & File Management Dashboard
  * Client Application Logic
@@ -580,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnTermReset) {
             btnTermReset.addEventListener('click', async () => {
-                if (!confirm('هل تريد إنهاء جلسة الطرفية الحالية وبدء صدفة (Shell) جديدة ونظيفة؟')) {
+                if (!(await window.customConfirm('هل تريد إنهاء جلسة الطرفية الحالية وبدء صدفة (Shell)) جديدة ونظيفة؟')) {
                     return;
                 }
                 try {
@@ -1027,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function confirmDelete(item) {
         const type = item.is_dir ? 'المجلد' : 'الملف';
-        if (!confirm(`هل أنت متأكد من رغبتك في حذف ${type} "${item.name}" نهائياً؟`)) {
+        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في حذف ${type} "${item.name}" نهائياً؟`))) {
             return;
         }
         try {
@@ -1079,8 +1107,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnEditorSave.addEventListener('click', () => saveCurrentFile());
         
-        btnEditorClose.addEventListener('click', () => {
-            if (editorUnsaved && !confirm('لديك تعديلات غير محفوظة، هل أنت متأكد من الإغلاق؟')) return;
+        btnEditorClose.addEventListener('click', async () => {
+            if (editorUnsaved && !(await window.customConfirm('لديك تعديلات غير محفوظة، هل أنت متأكد من الإغلاق؟'))) return;
             currentEditingFile = null;
             editorUnsaved = false;
             editorUnsavedDot.classList.add('hidden');
@@ -1434,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleServiceAction(serviceUnit, action) {
         const actLabels = { restart: 'إعادة تشغيل', stop: 'إيقاف', start: 'تشغيل' };
-        if (!confirm(`هل أنت متأكد من رغبتك في ${actLabels[action] || action} الخدمة ${serviceUnit}؟`)) {
+        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في ${actLabels[action] || action} الخدمة ${serviceUnit}؟`))) {
             return;
         }
         showToast(`جاري ${actLabels[action] || action} الخدمة ${serviceUnit}...`, 'info');
@@ -1452,7 +1480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function killProcess(pid, name) {
-        if (!confirm(`هل أنت متأكد من رغبتك في إنهاء وإيقاف العملية ${name} (PID: ${pid})؟`)) {
+        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في إنهاء وإيقاف العملية ${name} (PID: ${pid}))؟`)) {
             return;
         }
         try {
@@ -1634,7 +1662,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async () => {
                     const ip = btn.getAttribute('data-ip');
                     const jail = btn.getAttribute('data-jail');
-                    if (!confirm(`هل تريد فك الحظر عن ${ip} في سجن ${jail}؟`)) return;
+                    if (!(await window.customConfirm(`هل تريد فك الحظر عن ${ip} في سجن ${jail}؟`))) return;
                     try {
                         const res = await apiRequest('/api/security/fail2ban/unban', {
                             method: 'POST',
@@ -1765,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function unbanIp(ip) {
-        if (!confirm(`هل أنت متأكد من رغبتك في إلغاء وفك الحظر عن العنوان ${ip}؟`)) return;
+        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في إلغاء وفك الحظر عن العنوان ${ip}؟`))) return;
         try {
             const res = await apiRequest('/api/security/unban', {
                 method: 'POST',
@@ -1796,7 +1824,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function clearSecurityLogs() {
-        if (!confirm('هل تريد تفريغ وحذف سجلات الأمان والهجمات بالكامل؟')) return;
+        if (!(await window.customConfirm('هل تريد تفريغ وحذف سجلات الأمان والهجمات بالكامل؟'))) return;
         try {
             const res = await apiRequest('/api/security/logs/clear', { method: 'POST' });
             showToast(res.message, 'success');
@@ -1961,7 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const botId = btn.getAttribute('data-bot');
                 const action = btn.getAttribute('data-action');
                 if (action === 'delete') {
-                    if (!confirm('هل أنت متأكد أنك تريد إيقاف وحذف هذا البوت نهائياً؟')) return;
+                    if (!(await window.customConfirm('هل أنت متأكد أنك تريد إيقاف وحذف هذا البوت نهائياً؟'))) return;
                 }
                 btn.disabled = true;
                 btn.innerHTML = '⏳';
@@ -2060,7 +2088,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBackupsRefresh = document.getElementById('btn-backups-refresh');
 
     window.createPresetBackup = async function(preset) {
-        if (!confirm(`هل تريد أخذ نسخة احتياطية فورية لـ (${preset})؟`)) return;
+        if (!(await window.customConfirm(`هل تريد أخذ نسخة احتياطية فورية لـ (${preset}))؟`)) return;
         showToast('جاري إنشاء النسخة الاحتياطية وضغط الملفات...', 'info');
         try {
             const res = await apiRequest('/api/backups/create', {
@@ -2119,7 +2147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         backupsTableBody.querySelectorAll('.btn-delete-backup').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const filepath = btn.getAttribute('data-path');
-                if (!confirm(`هل أنت متأكد من حذف النسخة الاحتياطية (${filepath.split('/').pop()})؟`)) return;
+                if (!(await window.customConfirm(`هل أنت متأكد من حذف النسخة الاحتياطية (${filepath.split('/')).pop()})؟`)) return;
                 try {
                     const res = await apiRequest('/api/backups/delete', {
                         method: 'POST',

@@ -196,7 +196,7 @@ async function deleteDomain(domain) {
     const msg = document.documentElement.lang === 'en' 
         ? `Are you sure you want to delete domain ${domain}?\nNginx config will be deleted. This cannot be undone.` 
         : `هل أنت متأكد من حذف النطاق ${domain}؟\nسيتم حذف إعدادات Nginx ولن يمكن التراجع عن هذا الإجراء.`;
-    if (!confirm(msg)) return;
+    if (!(await window.customConfirm(msg))) return;
     
     try {
         const res = await window.apiRequest('/api/domains/delete', { method: 'POST', body: JSON.stringify({ domain }) });
@@ -212,7 +212,7 @@ async function deleteDomain(domain) {
 }
 
 async function installSSL(domain) {
-    if (!confirm(`سيتم الآن طلب وتثبيت / تجديد شهادة SSL للنطاق ${domain}.\n\nالرجاء التأكد أن النطاق (DNS) موجه بالفعل إلى الـ IP الخاص بهذا السيرفر، وإلا ستفشل العملية.\n\nهل تريد الاستمرار؟`)) return;
+    if (!(await window.customConfirm(`سيتم الآن طلب وتثبيت / تجديد شهادة SSL للنطاق ${domain}.\n\nالرجاء التأكد أن النطاق (DNS)) موجه بالفعل إلى الـ IP الخاص بهذا السيرفر، وإلا ستفشل العملية.\n\nهل تريد الاستمرار؟`)) return;
     
     showToast(`جاري الاتصال بـ Let's Encrypt لاستخراج شهادة النطاق ${domain}... الرجاء الانتظار`, 'info');
     
