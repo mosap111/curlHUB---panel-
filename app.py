@@ -1641,9 +1641,6 @@ async def execute_bot_action(req: BotActionRequest, sess: dict = Depends(verify_
                         p.wait(timeout=1)
                     except Exception:
                         pass
-        if req.action == "stop":
-            return {"status": "success", "message": f"تم إيقاف {b_info['name']} بنجاح"}
-
     # Webhook specific actions
     if b_info.get("webhook_url"):
         import urllib.request, json, urllib.parse
@@ -1664,7 +1661,11 @@ async def execute_bot_action(req: BotActionRequest, sess: dict = Depends(verify_
             except Exception: pass
             b_info["webhook_active"] = True
             ConfigManager.save(cfg)
-            return {"status": "success", "message": "تم تفعيل الويبهوك بنجاح"}
+            if req.action == "start":
+                return {"status": "success", "message": "تم تفعيل الويبهوك بنجاح"}
+                
+    if req.action == "stop":
+        return {"status": "success", "message": f"تم إيقاف {b_info['name']} بنجاح"}
 
     if req.action == "start" and running_pids:
         return {"status": "error", "message": "البوت يعمل بالفعل!"}
