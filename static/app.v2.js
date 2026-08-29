@@ -2560,6 +2560,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             let text = node.nodeValue.trim();
                             if (text && window.ar_to_en[text] && window.ar_to_en[text] !== text) {
                                 node.nodeValue = node.nodeValue.replace(text, window.ar_to_en[text]);
+                            } else if (text) {
+                                for (let ar of sortedKeys) {
+                                    if (ar.length > 2 && text.includes(ar) && window.ar_to_en[ar] !== ar) {
+                                        text = text.replace(ar, window.ar_to_en[ar]);
+                                        node.nodeValue = text;
+                                    }
+                                }
                             }
                         }
                     });
