@@ -193,7 +193,10 @@ async function submitDomain() {
 }
 
 async function deleteDomain(domain) {
-    if (!confirm(`تحذير خطير: هل أنت متأكد من حذف النطاق ${domain}؟ سيتم مسح الإعدادات والشهادات المرتبطة به نهائياً.`)) return;
+    const msg = document.documentElement.lang === 'en' 
+        ? `Are you sure you want to delete domain ${domain}?\nNginx config will be deleted. This cannot be undone.` 
+        : `هل أنت متأكد من حذف النطاق ${domain}؟\nسيتم حذف إعدادات Nginx ولن يمكن التراجع عن هذا الإجراء.`;
+    if (!confirm(msg)) return;
     
     try {
         const res = await window.apiRequest('/api/domains/delete', { method: 'POST', body: JSON.stringify({ domain }) });
