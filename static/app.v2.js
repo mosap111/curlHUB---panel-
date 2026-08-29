@@ -2468,10 +2468,28 @@ if (document.readyState === 'loading') {
 
 // --- Native i18n Translation (Arabic / English) ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Language forced to AR
-    let currentLang = 'ar';
-    localStorage.setItem('app_lang', 'ar');
-    localStorage.setItem('theme_light', 'false'); // Force dark theme
+    // Determine language from localStorage (default 'ar')
+    let currentLang = localStorage.getItem('app_lang') || 'ar';
+    
+    const userActions = document.querySelector('.user-actions');
+    if (userActions) {
+        const langBtn = document.createElement('button');
+        langBtn.id = 'lang-toggle-btn';
+        langBtn.className = 'btn btn-icon';
+        langBtn.title = 'English / عربي';
+        langBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>';
+        
+        langBtn.addEventListener('click', () => {
+            const nextLang = currentLang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('app_lang', nextLang);
+            // Clear any old google translate cookie to prevent conflicts
+            document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            location.reload();
+        });
+
+        // Insert before the theme toggle
+        userActions.insertBefore(langBtn, userActions.firstChild);
+    }
     
     // Apply translations if English
     if (currentLang === 'en') {
