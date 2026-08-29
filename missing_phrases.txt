@@ -1,0 +1,39 @@
+;
+        
+        // Wait for window.ar_to_en to be available
+        const applyTranslations = () => {
+            if (!window.ar_to_en) return;
+            
+            // Sort keys by length descending to prevent partial match bugs (e.g. replacing short words inside longer ones)
+            const sortedKeys = Object.keys(window.ar_to_en).sort((a, b) => b.length - a.length);
+
+            // Fast text node replacer
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, null, false);
+            const nodes = [];
+            let n;
+            while (n = walker.nextNode()) nodes.push(n);
+            
+            for (let node of nodes) {
+                if (node.nodeType === 3) {
+                    let text = node.nodeValue.trim();
+                    // Replace exact matches
+                    if (text && window.ar_to_en[text] && window.ar_to_en[text] !== text) {
+                        node.nodeValue = node.nodeValue.replace(text, window.ar_to_en[text]);
+                    } else if (text) {
+                        // Replace substrings (for dynamically inserted values like 0 سطر)
+                        for (let ar of sortedKeys) {
+                            if (ar.length > 2 && text.includes(ar) && window.ar_to_en[ar] !== ar) {
+                                text = text.replace(ar, window.ar_to_en[ar]);
+                                node.nodeValue = text;
+                            }
+                        }
+                    }
+                } else if (node.nodeType === 1) {
+                    [
+>جاري التحميل...</div>
+>حدث خطأ أثناء تحميل الملفات</div>
+>🔄 إعادة تشغيل</button>
+                             <button class=
+>🚫 حظر</button>
+                </td>
+            
