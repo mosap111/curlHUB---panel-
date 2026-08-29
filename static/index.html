@@ -124,7 +124,7 @@
             position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10;
         }
         .login-toggles .toggle-btn {
-            background: rgba(255,255,255,0.05); border-radius: 50%; color: #fff;
+            background: rgba(255,255,255,0.05); border-radius: 50%; color: var(--text-primary);
         }
         .login-toggles .lang-btn {
             font-family: Cairo; font-weight: bold; font-size: 12px; width: 36px; height: 36px;
@@ -138,23 +138,23 @@
         }
         .modern-login-logo {
             background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
-            color: #fff; border: none; box-shadow: 0 4px 15px rgba(56,189,248,0.4);
+            color: var(--text-primary); border: none; box-shadow: 0 4px 15px rgba(56,189,248,0.4);
         }
         .modern-login-title {
             font-size: 26px; letter-spacing: -0.5px;
-            background: linear-gradient(to left, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background: linear-gradient(to left, #fff, var(--text-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .modern-login-subtitle { color: #94a3b8; font-size: 13.5px; }
+        .modern-login-subtitle { color: var(--text-secondary); font-size: 13.5px; }
         .modern-input {
-            background: rgba(0,0,0,0.2) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 8px !important;
+            background: var(--bg-input) !important; border: 1px solid var(--border-color) !important; border-radius: 8px !important;
         }
-        .modern-input input { color: #fff !important; background: transparent !important; }
-        .modern-input svg { stroke: #94a3b8 !important; }
+        .modern-input input { color: var(--text-primary) !important; background: transparent !important; }
+        .modern-input svg { stroke: var(--text-secondary) !important; }
         .login-options-row {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 13.5px;
         }
         .remember-label {
-            display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cbd5e1; user-select: none;
+            display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-secondary); user-select: none;
         }
         .remember-label input { accent-color: var(--text-info); width: 16px; height: 16px; cursor: pointer; }
         .forgot-link { color: var(--text-info); text-decoration: none; transition: 0.2s; }
@@ -177,10 +177,10 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         }
         body.light-theme .modern-login-title { background: linear-gradient(to left, #0f172a, #334155); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        body.light-theme .modern-login-subtitle { color: #64748b; }
+        body.light-theme .modern-login-subtitle { color: var(--text-muted); }
         body.light-theme .modern-input { background: rgba(255,255,255,0.5) !important; border: 1px solid rgba(0,0,0,0.1) !important; }
         body.light-theme .modern-input input { color: #0f172a !important; }
-        body.light-theme .modern-input svg { stroke: #64748b !important; }
+        body.light-theme .modern-input svg { stroke: var(--text-muted) !important; }
         body.light-theme .remember-label { color: #475569; }
         body.light-theme .login-options-row label { color: #475569; }
     </style>
@@ -1141,7 +1141,7 @@
                             </div>
                             <div class="sys-subinfo">
                                 <span>النسخ المتوفرة: <strong id="backups-count-stat" style="color: var(--text-info);">0</strong></span>
-                                <span>المجلد الافتراضي: <strong style="color: #94a3b8;">/root/server_panel/backups</strong></span>
+                                <span>المجلد الافتراضي: <strong style="color: var(--text-secondary);">/root/server_panel/backups</strong></span>
                             </div>
                         </div>
                         <div class="banner-actions">
@@ -1348,9 +1348,9 @@
                     
                     <!-- Advanced Stats -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 20px 0 20px;">
-                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
-                            <span style="color: #94a3b8; font-size: 13px; margin-bottom: 5px;">إجمالي النطاقات</span>
-                            <span id="stat-total-domains" style="font-size: 24px; font-weight: bold; color: #e2e8f0;">0</span>
+                        <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px;">
+                            <span style="color: var(--text-secondary); font-size: 13px; margin-bottom: 5px;">إجمالي النطاقات</span>
+                            <span id="stat-total-domains" style="font-size: 24px; font-weight: bold; color: var(--text-primary);">0</span>
                         </div>
                         <div class="stat-pill" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px;">
                             <span style="color: var(--text-success); font-size: 13px; margin-bottom: 5px;">نطاقات محمية (SSL)</span>
@@ -1375,7 +1375,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="domains-table-body">
-                                    <tr><td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">جاري تحميل النطاقات...</td></tr>
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">جاري تحميل النطاقات...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1506,8 +1506,8 @@
                         <span class="slider round"></span>
                     </label>
                     <div style="display: flex; flex-direction: column;">
-                        <span style="color: #e2e8f0; font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
-                        <span style="color: #64748b; font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
+                        <span style="color: var(--text-primary); font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
+                        <span style="color: var(--text-muted); font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
                     </div>
                 </div>
 </div>
@@ -1555,8 +1555,8 @@
                         <span class="slider round"></span>
                     </label>
                     <div style="display: flex; flex-direction: column;">
-                        <span style="color: #e2e8f0; font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
-                        <span style="color: #64748b; font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
+                        <span style="color: var(--text-primary); font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
+                        <span style="color: var(--text-muted); font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
                     </div>
                 </div>
 </div>
@@ -1674,7 +1674,7 @@
                     </div>
                 </div>
                 
-                <div id="php-analysis-result" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: var(--text-success); font-size: 13px;">
+                <div id="php-analysis-result" style="display: none; background: var(--bg-input); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: var(--text-success); font-size: 13px;">
                     <!-- result here -->
                 </div>
 
@@ -1772,23 +1772,23 @@
             </div>
             <div style="padding: 20px;">
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">اسم النطاق (مثال: example.com)</label>
-                    <input type="text" id="domain-name" class="form-control modern-input" placeholder="example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">اسم النطاق (مثال: example.com)</label>
+                    <input type="text" id="domain-name" class="form-control modern-input" placeholder="example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">نوع النطاق</label>
-                    <select id="domain-type" class="form-control modern-input" onchange="toggleDomainTypeFields()" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">نوع النطاق</label>
+                    <select id="domain-type" class="form-control modern-input" onchange="toggleDomainTypeFields()" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
                         <option value="static">موقع ثابت / PHP (ملفات)</option>
                         <option value="proxy">بروكسي (توجيه لمنفذ، مثل البوتات)</option>
                     </select>
                 </div>
                 <div class="form-group" id="domain-static-fields" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">مسار الملفات (اختياري)</label>
-                    <input type="text" id="domain-root" class="form-control modern-input" placeholder="/var/www/example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">مسار الملفات (اختياري)</label>
+                    <input type="text" id="domain-root" class="form-control modern-input" placeholder="/var/www/example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
                 </div>
                 <div class="form-group" id="domain-proxy-fields" style="margin-bottom: 15px; display: none;">
-                    <label style="display: block; margin-bottom: 8px; color: #cbd5e1;">رابط التوجيه</label>
-                    <input type="text" id="domain-proxy" class="form-control modern-input" placeholder="http://127.0.0.1:8080" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">رابط التوجيه</label>
+                    <input type="text" id="domain-proxy" class="form-control modern-input" placeholder="http://127.0.0.1:8080" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
                 </div>
             
                 <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
@@ -1797,8 +1797,8 @@
                         <span class="slider round"></span>
                     </label>
                     <div style="display: flex; flex-direction: column;">
-                        <span style="color: #e2e8f0; font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
-                        <span style="color: #64748b; font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
+                        <span style="color: var(--text-primary); font-weight: bold;">فرض الاتصال الآمن (Force HTTPS)</span>
+                        <span style="color: var(--text-muted); font-size: 12px;">إعادة توجيه الزوار تلقائياً من HTTP إلى HTTPS</span>
                     </div>
                 </div>
 </div>
@@ -1809,6 +1809,6 @@
         </div>
     </div>
 
-    <script src="/static/domains.js?v=20260829_06"></script>
+    <script src="/static/domains.js?v=20260829_07"></script>
 </body>
 </html>
