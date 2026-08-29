@@ -17,3 +17,19 @@ backups/
 
 # Logs
 *.log
+
+# Developer & Temporary Scripts
+*trans*.py
+add_*.py
+extract_*.py
+find_*.py
+fix_*.py
+get_*.py
+make_*.py
+translate*.py
+update_*.py
+test_*.html
+missing_phrases.txt
+
+# Session Data
+sessions.json
