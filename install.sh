@@ -112,7 +112,7 @@ ufw allow 22/tcp
 systemctl enable fail2ban
 systemctl start fail2ban
 
-SERVER_IP=$(curl -s ifconfig.me || echo "YOUR_SERVER_IP")
+SERVER_IP=$(curl -4 -s ifconfig.me || echo "YOUR_SERVER_IP")
 
 clear
 echo -e "${CYAN}"
