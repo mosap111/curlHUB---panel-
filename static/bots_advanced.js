@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 type: "php",
                 webhook_url: finalSelectedMode === "webhook" ? (document.getElementById("php-bot-url") ? document.getElementById("php-bot-url").value.trim() : "") : "",
                 bot_token: document.getElementById("php-bot-token") ? document.getElementById("php-bot-token").value.trim() : "",
-                venv: "php",
+                venv: document.getElementById("new-bot-venv-php") ? document.getElementById("new-bot-venv-php").value : "php",
                 log: "/root/" + document.getElementById("new-bot-name-php").value.trim().replace(/\s+/g, '_') + ".log",
             };
             

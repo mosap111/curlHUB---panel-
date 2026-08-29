@@ -1675,6 +1675,8 @@ async def execute_bot_action(req: BotActionRequest, sess: dict = Depends(verify_
         else:
             import shutil
             if not shutil.which(python_bin):
+                if "php" in python_bin:
+                    return {"status": "error", "message": f"إصدار {python_bin} غير مثبت على السيرفر! يرجى تثبيته أو اختيار إصدار متوفر."}
                 python_bin = sys.executable or "/usr/bin/python3"
                 
             with open(log_path, "w") as log_file:
@@ -2267,7 +2269,7 @@ def generate_nginx_conf(req: DomainCreateRequest, has_ssl: bool = False):
         location_block.append("    }")
         
         # PHP support
-        location_block.append("    location ~ \.php$ {")
+        location_block.append("    location ~ \\.php$ {")
         location_block.append("        include snippets/fastcgi-php.conf;")
         # Dynamically find the PHP-FPM socket if available, default to 8.1
         location_block.append("        fastcgi_pass unix:/var/run/php/php-fpm.sock;")
@@ -2305,8 +2307,7 @@ def generate_nginx_conf(req: DomainCreateRequest, has_ssl: bool = False):
         conf_lines.extend(location_block)
         conf_lines.append("}")
 
-    return "
-".join(conf_lines)
+    return "\n".join(conf_lines)
 
 
 def safe_nginx_reload():

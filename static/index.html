@@ -1668,6 +1668,16 @@
                     <input type="text" id="new-bot-name-php" placeholder="مثال: PHP Webhook Bot" required>
                 </div>
                 <div class="input-group">
+                    <label>إصدار PHP (للعمل في الخلفية CLI)</label>
+                    <select id="new-bot-venv-php" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-family: inherit;">
+                        <option value="/usr/bin/php">الافتراضي للنظام (Default PHP)</option>
+                        <option value="/usr/bin/php8.1">PHP 8.1</option>
+                        <option value="/usr/bin/php8.2">PHP 8.2</option>
+                        <option value="/usr/bin/php8.3">PHP 8.3</option>
+                        <option value="/usr/bin/php8.4">PHP 8.4</option>
+                    </select>
+                </div>
+                <div class="input-group">
                     <label>مسار الملف الأساسي للبوت</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="new-bot-script-php" placeholder="/root/shop/bot.php" required style="flex: 1;"><button type="button" id="btn-browse-php" class="btn btn-ghost" title="تصفح وتحديد الملف">📂</button>
