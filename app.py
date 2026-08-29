@@ -2253,51 +2253,68 @@ async def get_domains_list(sess: dict = Depends(verify_session)):
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)})
 
-def generate_nginx_conf(req: DomainCreateRequest, existing_ssl_lines=None):
+def generate_nginx_conf(req: DomainCreateRequest, has_ssl: bool = False):
     conf_lines = []
     
-    # HTTP Server Block
+    location_block = []
+    if req.type == "static":
+        root = req.document_root or f"/var/www/{req.domain}"
+        Path(root).mkdir(parents=True, exist_ok=True)
+        location_block.append(f"    root {root};")
+        location_block.append("    index index.html index.php;")
+        location_block.append("    location / {")
+        location_block.append("        try_files $uri $uri/ =404;")
+        location_block.append("    }")
+        
+        # PHP support
+        location_block.append("    location ~ \.php$ {")
+        location_block.append("        include snippets/fastcgi-php.conf;")
+        # Dynamically find the PHP-FPM socket if available, default to 8.1
+        location_block.append("        fastcgi_pass unix:/var/run/php/php-fpm.sock;")
+        location_block.append("        # Note: A symlink or the exact version socket should be mapped to php-fpm.sock")
+        location_block.append("    }")
+    else:
+        proxy = req.proxy_url or "http://127.0.0.1:8080"
+        location_block.append("    location / {")
+        location_block.append(f"        proxy_pass {proxy};")
+        location_block.append("        proxy_set_header Host $host;")
+        location_block.append("        proxy_set_header X-Real-IP $remote_addr;")
+        location_block.append("        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;")
+        location_block.append("        proxy_set_header X-Forwarded-Proto $scheme;")
+        location_block.append("    }")
+
     conf_lines.append("server {")
     conf_lines.append("    listen 80;")
     conf_lines.append(f"    server_name {req.domain} www.{req.domain};")
     
-    if req.force_https and existing_ssl_lines:
+    if has_ssl and req.force_https:
         conf_lines.append("    return 301 https://$host$request_uri;")
-        conf_lines.append("}")
+    else:
+        conf_lines.extend(location_block)
+    conf_lines.append("}")
+
+    if has_ssl:
         conf_lines.append("")
         conf_lines.append("server {")
         conf_lines.append("    listen 443 ssl;")
         conf_lines.append(f"    server_name {req.domain} www.{req.domain};")
-        conf_lines.extend(["    " + l.strip() for l in existing_ssl_lines])
-    else:
-        # If no SSL yet but force_https requested, we can't redirect yet or it breaks validation
-        pass
+        conf_lines.append(f"    ssl_certificate /etc/letsencrypt/live/{req.domain}/fullchain.pem;")
+        conf_lines.append(f"    ssl_certificate_key /etc/letsencrypt/live/{req.domain}/privkey.pem;")
+        conf_lines.append("    include /etc/letsencrypt/options-ssl-nginx.conf;")
+        conf_lines.append("    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;")
+        conf_lines.extend(location_block)
+        conf_lines.append("}")
 
-    if req.type == "static":
-        root = req.document_root or f"/var/www/{req.domain}"
-        Path(root).mkdir(parents=True, exist_ok=True)
-        conf_lines.append(f"    root {root};")
-        conf_lines.append("    index index.html index.php;")
-        conf_lines.append("    location / {")
-        conf_lines.append("        try_files $uri $uri/ =404;")
-        conf_lines.append("    }")
-    else:
-        proxy = req.proxy_url or "http://127.0.0.1:8080"
-        conf_lines.append("    location / {")
-        conf_lines.append(f"        proxy_pass {proxy};")
-        conf_lines.append("        proxy_set_header Host $host;")
-        conf_lines.append("        proxy_set_header X-Real-IP $remote_addr;")
-        conf_lines.append("        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;")
-        conf_lines.append("        proxy_set_header X-Forwarded-Proto $scheme;")
-        conf_lines.append("    }")
-        
-    if not req.force_https and existing_ssl_lines:
-        # If they don't want force HTTPS but have SSL, we need to make sure SSL block is there
-        # Certbot usually modifies the file directly, so this is a basic fallback
-        conf_lines.extend(["    " + l.strip() for l in existing_ssl_lines])
-        
-    conf_lines.append("}")
-    return "\n".join(conf_lines)
+    return "
+".join(conf_lines)
+
+
+def safe_nginx_reload():
+    res = subprocess.run(["nginx", "-t"], capture_output=True, text=True)
+    if res.returncode != 0:
+        return False, res.stderr
+    subprocess.run(["systemctl", "reload", "nginx"], check=True)
+    return True, ""
 
 @app.post("/api/domains/create")
 async def create_domain_config(req: DomainCreateRequest, sess: dict = Depends(verify_session)):
@@ -2307,13 +2324,18 @@ async def create_domain_config(req: DomainCreateRequest, sess: dict = Depends(ve
     avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
     enabled_path = Path(f"/etc/nginx/sites-enabled/{req.domain}")
     
-    conf = generate_nginx_conf(req)
+    conf = generate_nginx_conf(req, has_ssl=False)
     try:
         avail_path.write_text(conf)
         if not enabled_path.exists():
             enabled_path.symlink_to(avail_path)
             
-        subprocess.run(["systemctl", "reload", "nginx"], check=True)
+        success, err = safe_nginx_reload()
+        if not success:
+            avail_path.unlink()
+            if enabled_path.exists(): enabled_path.unlink()
+            return JSONResponse({"success": False, "error": f"خطأ في إعدادات Nginx: {err}"})
+            
         return JSONResponse({"success": True, "message": f"تمت إضافة النطاق {req.domain} بنجاح."})
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)})
@@ -2326,19 +2348,29 @@ async def edit_domain_config(req: DomainCreateRequest, sess: dict = Depends(veri
     avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
     enabled_path = Path(f"/etc/nginx/sites-enabled/{req.domain}")
     
-    existing_ssl_lines = []
-    if avail_path.exists():
-        existing_conf = avail_path.read_text()
-        existing_ssl_lines = [line for line in existing_conf.split("\n") if "ssl_certificate" in line or "ssl_dhparam" in line or "managed by Certbot" in line or "listen 443" in line]
+    # Backup old config in case of failure
+    old_conf = avail_path.read_text() if avail_path.exists() else ""
     
-    conf = generate_nginx_conf(req, existing_ssl_lines)
+    # Check if SSL exists
+    has_ssl = Path(f"/etc/letsencrypt/live/{req.domain}").exists()
+    
+    conf = generate_nginx_conf(req, has_ssl=has_ssl)
 
     try:
         avail_path.write_text(conf)
         if not enabled_path.exists():
             enabled_path.symlink_to(avail_path)
             
-        subprocess.run(["systemctl", "reload", "nginx"], check=True)
+        success, err = safe_nginx_reload()
+        if not success:
+            # Rollback
+            if old_conf:
+                avail_path.write_text(old_conf)
+            else:
+                avail_path.unlink()
+                if enabled_path.exists(): enabled_path.unlink()
+            return JSONResponse({"success": False, "error": f"خطأ في إعدادات Nginx، تم التراجع: {err}"})
+            
         return JSONResponse({"success": True, "message": f"تم تعديل النطاق {req.domain} بنجاح."})
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)})
@@ -2362,19 +2394,23 @@ async def delete_domain_config(req: DomainActionRequest, sess: dict = Depends(ve
 @app.post("/api/domains/ssl")
 async def request_domain_ssl(req: DomainActionRequest, sess: dict = Depends(verify_session)):
     try:
-        # Check if force_https is currently on, so we apply --redirect
         avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
-        cmd = ["certbot", "--nginx", "-d", req.domain, "--non-interactive", "--agree-tos", "--register-unsafely-without-email"]
+        # Always request for both apex and www
+        cmd = ["certbot", "--nginx", "-d", req.domain, "-d", f"www.{req.domain}", "--non-interactive", "--agree-tos", "--register-unsafely-without-email"]
         
         if avail_path.exists() and "return 301 https" in avail_path.read_text():
             cmd.append("--redirect")
             
         result = subprocess.run(cmd, capture_output=True, text=True)
+        
         if result.returncode == 0:
+            safe_nginx_reload()
             return JSONResponse({"success": True, "message": "تم إصدار/تجديد شهادة SSL بنجاح!"})
         else:
             err = result.stderr or result.stdout
             return JSONResponse({"success": False, "error": f"فشل تثبيت SSL: {err}"})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)})
 
