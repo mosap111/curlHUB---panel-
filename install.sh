@@ -81,10 +81,14 @@ systemctl enable server-panel
 systemctl restart server-panel
 
 # 6. إعداد خادم الويب Nginx (Proxy)
-echo -e "${YELLOW}[5/6] إعداد البروكسي العكسي عبر Nginx...${RESET}"
+echo -e "${YELLOW}اختر البورت المخصص للوحة التحكم لزيادة الأمان (مثال: 2083, 8090, 8888)${RESET}"
+read -p "أدخل البورت الذي تريده (اضغط Enter لاختيار 8090 افتراضياً): " CUSTOM_PORT
+CUSTOM_PORT=${CUSTOM_PORT:-8090}
+
+echo -e "${YELLOW}[5/6] إعداد البروكسي العكسي عبر Nginx على البورت ${CUSTOM_PORT}...${RESET}"
 cat <<NGX > /etc/nginx/sites-available/server-panel
 server {
-    listen 80;
+    listen ${CUSTOM_PORT};
     server_name _; 
 
     location / {
@@ -106,7 +110,7 @@ systemctl restart nginx
 
 # 7. إعداد الحماية
 echo -e "${YELLOW}[6/6] ضبط جدار الحماية (UFW) وبدء Fail2Ban...${RESET}"
-ufw allow 80/tcp
+ufw allow ${CUSTOM_PORT}/tcp
 ufw allow 443/tcp
 ufw allow 22/tcp
 systemctl enable fail2ban
@@ -132,7 +136,7 @@ echo -e "${GREEN}====================================================${RESET}"
 echo -e "${GREEN}✅ تم التثبيت بنجاح! السيرفر الخاص بك الآن تحت إدارتك.${RESET}"
 echo -e "${GREEN}====================================================${RESET}"
 echo -e ""
-echo -e "${YELLOW}🌐 رابط اللوحة:${RESET} ${CYAN}http://${SERVER_IP}${RESET}"
+echo -e "${YELLOW}🌐 رابط اللوحة:${RESET} ${CYAN}http://${SERVER_IP}:${CUSTOM_PORT}${RESET}"
 echo -e "${YELLOW}👤 اسم المستخدم:${RESET} ${CYAN}admin${RESET}"
 echo -e "${YELLOW}🔑 كلمة المرور:${RESET} ${CYAN}admin123456${RESET}"
 echo -e ""
