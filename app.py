@@ -1445,32 +1445,7 @@ async def ban_fail2ban_ip(req: Fail2banActionRequest, sess: dict = Depends(verif
 # 🤖 2. TELEGRAM BOTS & APPLICATIONS MANAGER API
 # ==============================================================================
 
-DEFAULT_BOTS_REGISTRY = [
-    {
-        "id": "yms_bot",
-        "name": "YMS Telegram Bot",
-        "script": "/root/yms_project/bot.py",
-        "venv": "/root/yms_project/venv/bin/python",
-        "cwd": "/root/yms_project",
-        "log": "/root/yms_project/bot.log"
-    },
-    {
-        "id": "yms_app",
-        "name": "YMS Web Application",
-        "script": "/root/yms_project/app.py",
-        "venv": "/root/yms_project/venv/bin/python",
-        "cwd": "/root/yms_project",
-        "log": "/root/yms_project/app.log"
-    },
-    {
-        "id": "shop_bot",
-        "name": "Shop Telegram Bot",
-        "script": "/root/shop/botshop.py",
-        "venv": "/root/shop/.venv/bin/python",
-        "cwd": "/root/shop",
-        "log": "/root/shop/botshop.log"
-    }
-]
+DEFAULT_BOTS_REGISTRY = []
 
 class BotActionRequest(BaseModel):
     bot_id: str
