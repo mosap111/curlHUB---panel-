@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Up dir button
             if (path !== '/') {
                 const parentPath = path.substring(0, path.lastIndexOf('/')) || '/';
-                html += `<div class="fp-item fp-dir" data-path="${parentPath}" style="padding:8px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.1); font-family: monospace;">
+                html += `<div class="fp-item fp-dir" data-path="${parentPath}" style="padding:8px; cursor:pointer; border-bottom:1px solid var(--border-color); color: var(--text-primary); font-family: monospace;">
                     <span style="font-size: 16px;">📁</span> .. (رجوع)
                 </div>`;
             }
@@ -46,10 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.items && res.items.length > 0) {
                 res.items.forEach(item => {
                     const icon = item.is_dir ? '📁' : '📄';
-                    const color = item.is_dir ? '#fbbf24' : '#e2e8f0';
+                    const color = item.is_dir ? 'var(--accent-warning)' : 'var(--text-primary)';
                     const cls = item.is_dir ? 'fp-dir' : 'fp-file';
                     html += `
-                        <div class="fp-item ${cls}" data-path="${item.path}" style="padding:8px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.1); color:${color}; display:flex; gap:10px; align-items:center;">
+                        <div class="fp-item ${cls}" data-path="${item.path}" style="padding:8px; cursor:pointer; border-bottom:1px solid var(--border-color); color:${color}; display:flex; gap:10px; align-items:center;">
                             <span style="font-size: 16px;">${icon}</span>
                             <span style="font-family: monospace; font-size: 13px;">${item.name}</span>
                         </div>
@@ -284,8 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.showToast("خطأ أثناء الحفظ", "error");
         }
     }
-});
-
 
     const btnAnalyzePy = document.getElementById("btn-analyze-py");
     const pyPath = document.getElementById("new-bot-script-py");
@@ -317,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     pyVenv.value = "/usr/bin/python3";
                     if (res.has_requirements) {
-                        if ((await window.customConfirm("تم العثور على ملف requirements.txt ولكن لا توجد بيئة مخصصة (venv)). هل ترغب في إنشاء بيئة افتراضية وتثبيت المكاتب تلقائياً الآن؟ (قد يستغرق ذلك دقيقة)")) {
+                        if (await window.customConfirm("تم العثور على ملف requirements.txt ولكن لا توجد بيئة مخصصة (venv). هل ترغب في إنشاء بيئة افتراضية وتثبيت المكاتب تلقائياً الآن؟ (قد يستغرق ذلك دقيقة)")) {
                             btnAnalyzePy.textContent = "⏳ جاري التثبيت...";
                             try {
                                 const setupRes = await window.apiRequest("/api/bots/setup_venv", {
@@ -368,3 +366,4 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+});

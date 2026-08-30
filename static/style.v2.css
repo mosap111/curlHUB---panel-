@@ -1919,3 +1919,8 @@ html[dir="ltr"] .data-table td, html[dir="ltr"] .data-table th {
 }
 
 /* Golden corners have been applied to .glass-card globally */
+
+.fp-item:hover {
+    background-color: var(--bg-active);
+    transition: background-color 0.2s;
+}

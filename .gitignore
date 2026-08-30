@@ -32,3 +32,4 @@ get_*.py
 make_*.py
 translate*.py
 update_*.py
+patch_*.py

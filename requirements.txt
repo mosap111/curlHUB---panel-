@@ -20,3 +20,6 @@ uvicorn==0.52.3
 uvloop==0.22.1
 watchfiles==1.2.0
 websockets==17.0.1
+pyotp
+qrcode
+Pillow

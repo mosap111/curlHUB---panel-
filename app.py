@@ -11,6 +11,13 @@ import shutil
 import time
 import platform
 import subprocess
+import json
+import logging
+import re
+import pyotp
+import qrcode
+import io
+import base64
 from typing import Optional, List
 from pathlib import Path
 import psutil
@@ -48,8 +55,10 @@ def load_sessions():
         SESSION_STORE = {}
 
 def save_sessions():
-    with open(SESSION_FILE, "w") as f:
+    tmp = SESSION_FILE.with_suffix(".tmp")
+    with open(tmp, "w") as f:
         json.dump(SESSION_STORE, f)
+    os.replace(tmp, SESSION_FILE)
 
 load_sessions()
 
@@ -331,10 +340,18 @@ class LoginRequest(BaseModel):
     username: str
     password: str
     remember: bool = False
+    totp_code: Optional[str] = None
 
 class ChangePassRequest(BaseModel):
     old_password: str
     new_password: str
+
+class Enable2FARequest(BaseModel):
+    totp_code: str
+    secret: str
+
+class Disable2FARequest(BaseModel):
+    password: str
 
 class FileSaveRequest(BaseModel):
     path: str
@@ -396,6 +413,17 @@ async def login(req: LoginRequest, request: Request, response: Response):
     pass_match = secrets.compare_digest(input_hash, cfg["password_hash"])
     
     if user_match and pass_match:
+        if cfg.get("2fa_enabled") and cfg.get("2fa_secret"):
+            if not req.totp_code:
+                return {"status": "2fa_required"}
+            totp = pyotp.TOTP(cfg.get("2fa_secret"))
+            if not totp.verify(req.totp_code):
+                if client_ip not in SECURITY_SHIELD.fuzz_tracker:
+                    SECURITY_SHIELD.fuzz_tracker[client_ip] = {"count": 1, "first_seen": now}
+                else:
+                    SECURITY_SHIELD.fuzz_tracker[client_ip]["count"] += 1
+                raise HTTPException(status_code=401, detail="رمز التحقق غير صحيح")
+
         SECURITY_SHIELD.fuzz_tracker.pop(client_ip, None)
         token = secrets.token_hex(32)
         SESSION_STORE[token] = {
@@ -542,10 +570,58 @@ async def change_password(req: ChangePassRequest, sess: dict = Depends(verify_se
     ConfigManager.save(cfg)
     return {"status": "success", "message": "تم تحديث كلمة المرور بنجاح"}
 
+@app.get("/api/auth/2fa/status")
+async def get_2fa_status(sess: dict = Depends(verify_session)):
+    cfg = ConfigManager.load()
+    return {"enabled": cfg.get("2fa_enabled", False)}
+
+@app.get("/api/auth/2fa/setup")
+async def setup_2fa(sess: dict = Depends(verify_session)):
+    secret = pyotp.random_base32()
+    totp = pyotp.TOTP(secret)
+    cfg = ConfigManager.load()
+    username = cfg.get("username", "admin")
+    provisioning_uri = totp.provisioning_uri(name=username, issuer_name="ServerPanel")
+    
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr.add_data(provisioning_uri)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    qr_base64 = f"data:image/png;base64,{img_str}"
+    
+    return {"secret": secret, "qr_code": qr_base64}
+
+@app.post("/api/auth/2fa/enable")
+async def enable_2fa(req: Enable2FARequest, sess: dict = Depends(verify_session)):
+    totp = pyotp.TOTP(req.secret)
+    if not totp.verify(req.totp_code):
+        raise HTTPException(status_code=400, detail="الرمز غير صحيح، حاول مرة أخرى")
+        
+    cfg = ConfigManager.load()
+    cfg["2fa_secret"] = req.secret
+    cfg["2fa_enabled"] = True
+    ConfigManager.save(cfg)
+    return {"status": "success", "message": "تم تفعيل المصادقة الثنائية بنجاح"}
+
+@app.post("/api/auth/2fa/disable")
+async def disable_2fa(req: Disable2FARequest, sess: dict = Depends(verify_session)):
+    cfg = ConfigManager.load()
+    if get_password_hash(req.password) != cfg["password_hash"]:
+        raise HTTPException(status_code=400, detail="كلمة المرور غير صحيحة")
+        
+    cfg["2fa_secret"] = ""
+    cfg["2fa_enabled"] = False
+    ConfigManager.save(cfg)
+    return {"status": "success", "message": "تم تعطيل المصادقة الثنائية بنجاح"}
+
 # --- SYSTEM STATS & COMPREHENSIVE MONITOR API ---
 @app.get("/api/system/stats")
 async def get_system_stats(sess: dict = Depends(verify_session)):
-    cpu_percent = psutil.cpu_percent(interval=0.1)
+    cpu_percent = await asyncio.to_thread(psutil.cpu_percent, 0.1)
     cpu_count = psutil.cpu_count()
     load_avg = os.getloadavg() if hasattr(os, "getloadavg") else (0, 0, 0)
     
@@ -589,7 +665,7 @@ async def get_system_stats(sess: dict = Depends(verify_session)):
 @app.get("/api/system/monitor")
 async def get_full_system_monitor(sess: dict = Depends(verify_session)):
     load_avg = os.getloadavg() if hasattr(os, "getloadavg") else (0, 0, 0)
-    cpu_percent = psutil.cpu_percent(interval=0.1)
+    cpu_percent = await asyncio.to_thread(psutil.cpu_percent, 0.1)
     cpu_cores = psutil.cpu_count(logical=True) or 1
     cpu_physical = psutil.cpu_count(logical=False) or cpu_cores
     per_cpu = psutil.cpu_percent(interval=None, percpu=True)
@@ -623,7 +699,7 @@ async def get_full_system_monitor(sess: dict = Depends(verify_session)):
     
     try:
         cmd_ps = ['ps', '-eo', 'pid,user,%cpu,%mem,rss,stat,comm,args', '--sort=-%cpu']
-        out_ps = subprocess.check_output(cmd_ps, text=True)
+        out_ps = await asyncio.to_thread(subprocess.check_output, cmd_ps, text=True)
         lines = out_ps.strip().split('\n')
         for line in lines[1:]:
             parts = line.split(None, 7)
@@ -678,7 +754,7 @@ async def get_full_system_monitor(sess: dict = Depends(verify_session)):
     services = []
     try:
         cmd_srv = ['systemctl', 'list-units', '--type=service', '--state=running,failed,active', '--no-legend', '--no-pager']
-        out_srv = subprocess.check_output(cmd_srv, text=True)
+        out_srv = await asyncio.to_thread(subprocess.check_output, cmd_srv, text=True)
         for line in out_srv.strip().split('\n'):
             if not line:
                 continue
@@ -804,7 +880,7 @@ async def service_action(req: ServiceActionRequest, sess: dict = Depends(verify_
         
     try:
         cmd = ["systemctl", req.action, srv]
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        res = await asyncio.to_thread(subprocess.run, cmd, capture_output=True, text=True, timeout=10)
         if res.returncode == 0:
             act_names = {"restart": "إعادة تشغيل", "stop": "إيقاف", "start": "تشغيل", "reload": "إعادة تحميل"}
             return {"status": "success", "message": f"تمت {act_names.get(req.action, req.action)} الخدمة {srv} بنجاح"}
@@ -1179,9 +1255,13 @@ class PersistentPtySession:
             return False
 
     async def _read_loop(self):
+        import select
+        loop = asyncio.get_running_loop()
         while self.is_running and self.master_fd:
             try:
-                await asyncio.sleep(0.01)
+                r, _, _ = await loop.run_in_executor(None, select.select, [self.master_fd], [], [], 1.0)
+                if not r:
+                    continue
                 try:
                     data = os.read(self.master_fd, 8192)
                     if data:
@@ -1325,7 +1405,7 @@ async def websocket_terminal(websocket: WebSocket, token: Optional[str] = None):
                     pty_session.write(text_data.encode("utf-8", errors="ignore"))
             elif "bytes" in message:
                 pty_session.write(message["bytes"])
-    except (WebSocketDisconnect, asyncio.CancelledError):
+    except (WebSocketDisconnect, asyncio.CancelledError, RuntimeError):
         pass
     finally:
         # DO NOT KILL BASH! Simply detach the WebSocket so the session stays alive!
@@ -1602,7 +1682,7 @@ async def execute_bot_action(req: BotActionRequest, sess: dict = Depends(verify_
     if req.action == "delete":
         # Stop process first if running
         if req.bot_id in systemd_map:
-            subprocess.run(["systemctl", "stop", systemd_map[req.bot_id]], check=False)
+            await asyncio.to_thread(subprocess.run, ["systemctl", "stop", systemd_map[req.bot_id]], check=False)
         elif running_pids:
             for pid in running_pids:
                 try:
@@ -1627,7 +1707,7 @@ async def execute_bot_action(req: BotActionRequest, sess: dict = Depends(verify_
 
     if req.action in ["stop", "restart"]:
         if req.bot_id in systemd_map:
-            subprocess.run(["systemctl", "stop", systemd_map[req.bot_id]], check=False)
+            await asyncio.to_thread(subprocess.run, ["systemctl", "stop", systemd_map[req.bot_id]], check=False)
         elif running_pids:
             for pid in running_pids:
                 try:
@@ -1672,7 +1752,7 @@ async def execute_bot_action(req: BotActionRequest, sess: dict = Depends(verify_
         
     if req.action in ["start", "restart"]:
         if req.bot_id in systemd_map:
-            subprocess.run(["systemctl", "start", systemd_map[req.bot_id]], check=False)
+            await asyncio.to_thread(subprocess.run, ["systemctl", "start", systemd_map[req.bot_id]], check=False)
         else:
             import shutil
             if not shutil.which(python_bin):
@@ -1730,17 +1810,17 @@ async def setup_venv(req: SetupVenvReq, sess: dict = Depends(verify_session)):
     try:
         # Create venv if not exists
         if not os.path.exists(venv_dir):
-            subprocess.run(["python3", "-m", "venv", ".venv"], cwd=script_dir, check=True, capture_output=True)
+            await asyncio.to_thread(subprocess.run, ["python3", "-m", "venv", ".venv"], cwd=script_dir, check=True, capture_output=True)
             
-        pip_path = os.path.join(venv_dir, "bin", "pip")
         python_path = os.path.join(venv_dir, "bin", "python")
+        pip_path = os.path.join(venv_dir, "bin", "pip")
         
-        # Upgrade pip
-        subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip"], cwd=script_dir, capture_output=True)
+        # Upgrade pip and install requirements
+        await asyncio.to_thread(subprocess.run, [python_path, "-m", "pip", "install", "--upgrade", "pip"], cwd=script_dir, capture_output=True)
         
-        # Install requirements
+        req_file = os.path.join(script_dir, "requirements.txt")
         if os.path.exists(req_file):
-            res = subprocess.run([pip_path, "install", "-r", "requirements.txt"], cwd=script_dir, capture_output=True, text=True)
+            res = await asyncio.to_thread(subprocess.run, [pip_path, "install", "-r", "requirements.txt"], cwd=script_dir, capture_output=True, text=True)
             if res.returncode != 0:
                 return {"status": "error", "message": f"فشل تثبيت المكاتب: {res.stderr}"}
                 
@@ -1966,20 +2046,22 @@ async def get_db_schema(db_path: str, sess: dict = Depends(verify_session)):
     p = Path(db_path)
     if not p.exists():
         raise HTTPException(status_code=404, detail="قاعدة البيانات غير موجودة")
-    try:
-        conn = sqlite3.connect(f"file:{p}?mode=ro", uri=True)
+    def fetch_schema(db_path):
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
         tables = [r[0] for r in cursor.fetchall()]
-        
         schema_data = {}
         for table in tables:
             cursor.execute(f"PRAGMA table_info('{table}')")
             cols = [{"name": r[1], "type": r[2], "notnull": bool(r[3]), "pk": bool(r[5])} for r in cursor.fetchall()]
             cursor.execute(f"SELECT COUNT(*) FROM '{table}'")
-            count = cursor.fetchone()[0]
-            schema_data[table] = {"columns": cols, "total_rows": count}
+            schema_data[table] = {"columns": cols, "total_rows": cursor.fetchone()[0]}
         conn.close()
+        return tables, schema_data
+
+    try:
+        tables, schema_data = await asyncio.to_thread(fetch_schema, p)
         return {"status": "success", "tables": tables, "schema": schema_data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"خطأ في قراءة قاعدة البيانات: {e}")
@@ -1993,19 +2075,19 @@ async def execute_db_query(req: DbQueryRequest, sess: dict = Depends(verify_sess
     query = req.query.strip()
     is_select = query.upper().startswith("SELECT") or query.upper().startswith("PRAGMA")
     
-    try:
-        if is_select:
-            conn = sqlite3.connect(f"file:{p}?mode=ro", uri=True)
+    def execute_query(db_path, query_str, select_mode, limit):
+        if select_mode:
+            conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         else:
-            conn = sqlite3.connect(str(p))
+            conn = sqlite3.connect(str(db_path))
             
         cursor = conn.cursor()
         start_t = time.time()
-        cursor.execute(query)
+        cursor.execute(query_str)
         
-        if is_select:
+        if select_mode:
             columns = [desc[0] for desc in cursor.description] if cursor.description else []
-            rows = cursor.fetchmany(req.limit or 100)
+            rows = cursor.fetchmany(limit or 100)
             elapsed = round((time.time() - start_t) * 1000, 2)
             conn.close()
             return {
@@ -2028,6 +2110,9 @@ async def execute_db_query(req: DbQueryRequest, sess: dict = Depends(verify_sess
                 "execution_ms": elapsed,
                 "message": f"تم تنفيذ الاستعلام بنجاح (تأثر {changes} صف)"
             }
+
+    try:
+        return await asyncio.to_thread(execute_query, p, query, is_select, req.limit)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"خطأ في الاستعلام: {e}")
 
@@ -2307,15 +2392,14 @@ def generate_nginx_conf(req: DomainCreateRequest, has_ssl: bool = False):
         conf_lines.append("    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;")
         conf_lines.extend(location_block)
         conf_lines.append("}")
-
     return "\n".join(conf_lines)
 
 
-def safe_nginx_reload():
-    res = subprocess.run(["nginx", "-t"], capture_output=True, text=True)
+async def safe_nginx_reload():
+    res = await asyncio.to_thread(subprocess.run, ["nginx", "-t"], capture_output=True, text=True)
     if res.returncode != 0:
         return False, res.stderr
-    subprocess.run(["systemctl", "reload", "nginx"], check=True)
+    await asyncio.to_thread(subprocess.run, ["systemctl", "reload", "nginx"], check=True)
     return True, ""
 
 @app.post("/api/domains/create")
@@ -2332,7 +2416,7 @@ async def create_domain_config(req: DomainCreateRequest, sess: dict = Depends(ve
         if not enabled_path.exists():
             enabled_path.symlink_to(avail_path)
             
-        success, err = safe_nginx_reload()
+        success, err = await safe_nginx_reload()
         if not success:
             avail_path.unlink()
             if enabled_path.exists(): enabled_path.unlink()
@@ -2363,7 +2447,7 @@ async def edit_domain_config(req: DomainCreateRequest, sess: dict = Depends(veri
         if not enabled_path.exists():
             enabled_path.symlink_to(avail_path)
             
-        success, err = safe_nginx_reload()
+        success, err = await safe_nginx_reload()
         if not success:
             # Rollback
             if old_conf:
@@ -2403,10 +2487,10 @@ async def request_domain_ssl(req: DomainActionRequest, sess: dict = Depends(veri
         if avail_path.exists() and "return 301 https" in avail_path.read_text():
             cmd.append("--redirect")
             
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = await asyncio.to_thread(subprocess.run, cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
-            safe_nginx_reload()
+            await safe_nginx_reload()
             return JSONResponse({"success": True, "message": "تم إصدار/تجديد شهادة SSL بنجاح!"})
         else:
             err = result.stderr or result.stdout

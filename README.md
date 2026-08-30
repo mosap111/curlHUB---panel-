@@ -21,7 +21,7 @@ An advanced, all-in-one platform for managing Linux servers via the browser. Bui
   - **Auto Venv & Requirements:** Automatically detects `.venv` environments. If `requirements.txt` is found, it offers 1-click installation.
   - **Webhooks & Polling:** Native PHP-CGI execution for Webhook bots via FastAPI proxy. Auto-resolves Webhook/Polling conflicts.
   - **Zombie Reaper:** Automatically cleans up orphaned/zombie processes when stopping bots.
-- 🛡️ **Security Shield:** Built-in UFW & Fail2Ban GUI. Contains 21 Honeypot Traps to instantly ban vulnerability scanners (SQLMap, Nmap, etc.).
+- 🛡️ **Security Shield:** Built-in UFW & Fail2Ban GUI. Contains 21 Honeypot Traps to instantly ban vulnerability scanners (SQLMap, Nmap, etc.). Now includes TOTP Two-Factor Authentication (2FA) for admin panel access.
 - 📊 **System Monitor:** Real-time RAM, CPU, Swap, and listening ports monitor. Includes a 1-click Server Booster to clean RAM/Cache.
 - 📁 **File Manager & IDE:** Drag & drop file manager with an integrated Ace Code Editor (Syntax highlighting for 20+ languages).
 - 💾 **1-Click Backups:** Backup your databases, apps, or the panel itself into `.tar.gz` instantly.

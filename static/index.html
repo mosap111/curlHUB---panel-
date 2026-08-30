@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
     
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="/static/style.v2.css?v=20260829_10">
-    <link rel="stylesheet" href="/static/animations.css">
+    <link rel="stylesheet" href="/static/style.v2.css?v=20260830_14">
+
 </head>
 <body class="dark-theme">
 
@@ -66,6 +66,17 @@
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
                         <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <div class="input-group" id="totp-group" style="display: none;">
+                    <label id="lbl-totp" for="totp-code">رمز التحقق (2FA)</label>
+                    <div class="input-wrapper modern-input">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="text" id="totp-code" placeholder="أدخل 6 أرقام" autocomplete="off" maxlength="6" pattern="[0-9]{6}">
                     </div>
                 </div>
 
@@ -1415,6 +1426,80 @@
                         </form>
                     </div>
 
+                    <!-- 2FA Card -->
+                    <div class="settings-card glass-card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            <h3>المصادقة الثنائية (2FA)</h3>
+                        </div>
+                        <p class="card-desc">تأمين تسجيل الدخول باستخدام تطبيق مصادقة مثل Google Authenticator.</p>
+                        
+                        <div id="2fa-status-container" style="margin-top: 15px;">
+                            <div id="2fa-disabled-view">
+                                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px;">الميزة غير مفعلة حالياً. يمكنك تفعيلها لمزيد من الأمان.</p>
+                                <button type="button" id="btn-setup-2fa" class="btn btn-primary">إعداد المصادقة الثنائية</button>
+                            </div>
+
+                            <div id="2fa-setup-view" style="display: none; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    إعداد المصادقة خطوة بخطوة
+                                </h4>
+                                <p style="font-size: 14px; margin-bottom: 12px;">1. امسح الرمز المربع (QR Code) باستخدام تطبيق Authenticator (مثل Google أو Authy):</p>
+                                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                                    <div style="background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                        <img id="2fa-qr-img" src="" alt="QR Code" style="width: 180px; height: 180px; display: block;">
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; margin-bottom: 20px; text-align: center; color: var(--text-muted);">
+                                    في حال لم تتمكن من مسح الرمز، يمكنك إدخال المفتاح السري يدوياً:<br>
+                                    <strong id="2fa-secret-text" style="user-select: all; font-family: monospace; font-size: 15px; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; color: var(--text-color);"></strong>
+                                </p>
+                                
+                                <p style="font-size: 14px; margin-bottom: 12px;">2. أدخل الرمز المكون من 6 أرقام لتأكيد الربط وتفعيل الميزة:</p>
+                                <div class="input-group" style="margin-bottom: 20px;">
+                                    <div class="input-wrapper modern-input" style="background: rgba(0,0,0,0.2);">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                        <input type="text" id="2fa-confirm-code" placeholder="الرمز (6 أرقام)" maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="letter-spacing: 2px; font-weight: bold; font-size: 16px; text-align: center;">
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="button" id="btn-verify-2fa" class="btn btn-success" style="flex: 2; padding: 10px;">✅ تأكيد وتفعيل الميزة</button>
+                                    <button type="button" id="btn-cancel-setup-2fa" class="btn btn-secondary" style="flex: 1; padding: 10px;">❌ إلغاء</button>
+                                </div>
+                            </div>
+
+                            <div id="2fa-enabled-view" style="display: none; background: rgba(0,255,100,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,100,0.2);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                                    <div style="background: var(--status-success); color: #fff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; color: var(--status-success);">المصادقة الثنائية مفعلة</h4>
+                                        <p style="margin: 0; font-size: 13px; color: var(--text-muted);">حسابك الآن محمي بطبقة أمان إضافية.</p>
+                                    </div>
+                                </div>
+                                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;">
+                                <p style="font-size: 14px; margin-bottom: 12px;">لإلغاء تفعيل المصادقة الثنائية، يرجى إدخال كلمة مرور السيرفر الحالية:</p>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <div class="input-wrapper modern-input">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                        <input type="password" id="2fa-disable-password" placeholder="أدخل كلمة المرور للإلغاء" autocomplete="off">
+                                    </div>
+                                </div>
+                                <button type="button" id="btn-disable-2fa" class="btn btn-danger" style="width: 100%; padding: 10px;">🛡️ تعطيل (إلغاء) المصادقة الثنائية</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Telegram Alert Notifications Card -->
                     <div class="settings-card glass-card">
                         <div class="card-header">
@@ -1730,9 +1815,9 @@
                 <button id="btn-close-file-picker" class="modal-close-btn">&times;</button>
             </div>
             <div class="input-group" style="margin-bottom: 10px;">
-                <input type="text" id="file-picker-path" value="/root" readonly style="background: rgba(0,0,0,0.3); cursor: pointer;">
+                <input type="text" id="file-picker-path" value="/root" readonly style="background: var(--bg-input); color: var(--text-primary); cursor: pointer;">
             </div>
-            <div id="file-picker-list" style="overflow-y: auto; flex: 1; min-height: 250px; background: rgba(0,0,0,0.15); border-radius: 6px; padding: 5px;">
+            <div id="file-picker-list" style="overflow-y: auto; flex: 1; min-height: 250px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 5px;">
                 <!-- Files will load here -->
             </div>
         </div>
@@ -1778,8 +1863,8 @@
 
     <!-- Main Client JS -->
     <script src="/static/i18n.js?v=20260829_08"></script>
-    <script src="/static/app.v2.js?v=20260829_08"></script>
-    <script src="/static/bots_advanced.js?v=20260828_11"></script>
+    <script src="/static/app.v2.js?v=20260830_14"></script>
+    <script src="/static/bots_advanced.js?v=20260830_15"></script>
 
     <!-- Domain Add Modal -->
     <div id="modal-domain" class="modal-overlay hidden">

@@ -359,17 +359,31 @@ document.addEventListener('DOMContentLoaded', () => {
         loginError.classList.add('hidden');
         const user = document.getElementById('username').value.trim();
         const pass = document.getElementById('password').value;
+        const totpCode = document.getElementById('totp-code').value;
 
         try {
+            const reqBody = { username: user, password: pass, remember: document.getElementById('remember-me').checked };
+            if (totpCode) {
+                reqBody.totp_code = totpCode;
+            }
+
             const res = await apiRequest('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass, remember: document.getElementById('remember-me').checked })
+                body: JSON.stringify(reqBody)
             });
+
+            if (res.status === '2fa_required') {
+                document.getElementById('totp-group').style.display = 'block';
+                loginError.textContent = 'يرجى إدخال رمز التحقق بخطوتين (2FA)';
+                loginError.classList.remove('hidden');
+                document.getElementById('totp-code').focus();
+                return;
+            }
+
             authToken = res.token;
             currentUser = res.username;
             
-            // Backend handles session_token (HttpOnly). We just store the username for UI purposes.
             if (document.getElementById('remember-me').checked) {
                 const d = new Date();
                 d.setTime(d.getTime() + (7*24*60*60*1000));
@@ -608,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnTermReset) {
             btnTermReset.addEventListener('click', async () => {
-                if (!(await window.customConfirm('هل تريد إنهاء جلسة الطرفية الحالية وبدء صدفة (Shell)) جديدة ونظيفة؟')) {
+                if (!(await window.customConfirm('هل تريد إنهاء جلسة الطرفية الحالية وبدء صدفة (Shell) جديدة ونظيفة؟'))) {
                     return;
                 }
                 try {
@@ -1480,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function killProcess(pid, name) {
-        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في إنهاء وإيقاف العملية ${name} (PID: ${pid}))؟`)) {
+        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في إنهاء وإيقاف العملية ${name} (PID: ${pid})؟`))) {
             return;
         }
         try {
@@ -2051,7 +2065,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (btnAddCustomBot) btnAddCustomBot.addEventListener('click', () => {
-        if (addBotForm) addBotForm.reset();
+        const pyForm = document.getElementById('add-bot-form-python');
+        const phpForm = document.getElementById('add-bot-form-php');
+        if (pyForm) pyForm.reset();
+        if (phpForm) phpForm.reset();
         if (addBotModal) addBotModal.classList.remove('hidden');
     });
     if (btnCloseAddBot) btnCloseAddBot.addEventListener('click', () => addBotModal.classList.add('hidden'));
@@ -2088,7 +2105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBackupsRefresh = document.getElementById('btn-backups-refresh');
 
     window.createPresetBackup = async function(preset) {
-        if (!(await window.customConfirm(`هل تريد أخذ نسخة احتياطية فورية لـ (${preset}))؟`)) return;
+        if (!(await window.customConfirm(`هل تريد أخذ نسخة احتياطية فورية لـ (${preset})؟`))) return;
         showToast('جاري إنشاء النسخة الاحتياطية وضغط الملفات...', 'info');
         try {
             const res = await apiRequest('/api/backups/create', {
@@ -2147,7 +2164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         backupsTableBody.querySelectorAll('.btn-delete-backup').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const filepath = btn.getAttribute('data-path');
-                if (!(await window.customConfirm(`هل أنت متأكد من حذف النسخة الاحتياطية (${filepath.split('/')).pop()})؟`)) return;
+                if (!(await window.customConfirm(`هل أنت متأكد من حذف النسخة الاحتياطية (${filepath.split('/').pop()})؟`))) return;
                 try {
                     const res = await apiRequest('/api/backups/delete', {
                         method: 'POST',
@@ -2459,6 +2476,103 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnTestTelegram.textContent = '⚡ تجربة إرسال تنبيه';
             }
         });
+    }
+
+    // 2FA Logic
+    const btnSetup2FA = document.getElementById('btn-setup-2fa');
+    const btnVerify2FA = document.getElementById('btn-verify-2fa');
+    const btnCancelSetup2FA = document.getElementById('btn-cancel-setup-2fa');
+    const btnDisable2FA = document.getElementById('btn-disable-2fa');
+    const qrImg2FA = document.getElementById('2fa-qr-img');
+    const secretText2FA = document.getElementById('2fa-secret-text');
+    let pending2FASecret = '';
+
+    async function load2FAStatus() {
+        if (!authToken) return;
+        try {
+            const res = await apiRequest('/api/auth/2fa/status');
+            if (res.enabled) {
+                document.getElementById('2fa-disabled-view').style.display = 'none';
+                document.getElementById('2fa-setup-view').style.display = 'none';
+                document.getElementById('2fa-enabled-view').style.display = 'block';
+            } else {
+                document.getElementById('2fa-disabled-view').style.display = 'block';
+                document.getElementById('2fa-setup-view').style.display = 'none';
+                document.getElementById('2fa-enabled-view').style.display = 'none';
+            }
+        } catch (e) {
+            console.error("Failed to load 2FA status:", e);
+        }
+    }
+
+    if (btnSetup2FA) {
+        btnSetup2FA.addEventListener('click', async () => {
+            try {
+                const res = await apiRequest('/api/auth/2fa/setup');
+                pending2FASecret = res.secret;
+                qrImg2FA.src = res.qr_code;
+                secretText2FA.textContent = res.secret;
+                document.getElementById('2fa-disabled-view').style.display = 'none';
+                document.getElementById('2fa-setup-view').style.display = 'block';
+            } catch (e) {
+                showToast('فشل بدء الإعداد: ' + e.message, 'error');
+            }
+        });
+    }
+
+    if (btnCancelSetup2FA) {
+        btnCancelSetup2FA.addEventListener('click', () => {
+            pending2FASecret = '';
+            document.getElementById('2fa-confirm-code').value = '';
+            load2FAStatus();
+        });
+    }
+
+    if (btnVerify2FA) {
+        btnVerify2FA.addEventListener('click', async () => {
+            const code = document.getElementById('2fa-confirm-code').value;
+            if (!code || code.length !== 6) {
+                showToast('يرجى إدخال 6 أرقام صالحة', 'error');
+                return;
+            }
+            try {
+                await apiRequest('/api/auth/2fa/enable', {
+                    method: 'POST',
+                    body: JSON.stringify({ secret: pending2FASecret, totp_code: code })
+                });
+                showToast('تم تفعيل المصادقة الثنائية بنجاح', 'success');
+                document.getElementById('2fa-confirm-code').value = '';
+                load2FAStatus();
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        });
+    }
+
+    if (btnDisable2FA) {
+        btnDisable2FA.addEventListener('click', async () => {
+            const pass = document.getElementById('2fa-disable-password').value;
+            if (!pass) {
+                showToast('يرجى إدخال كلمة المرور للتعطيل', 'error');
+                return;
+            }
+            try {
+                await apiRequest('/api/auth/2fa/disable', {
+                    method: 'POST',
+                    body: JSON.stringify({ password: pass })
+                });
+                showToast('تم تعطيل المصادقة الثنائية', 'success');
+                document.getElementById('2fa-disable-password').value = '';
+                load2FAStatus();
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        });
+    }
+
+    // Call load2FAStatus on load if we have nav tabs (to ensure we're inside the app UI)
+    if (navTabs && navTabs.length > 0) {
+        load2FAStatus();
     }
 
     // Startup check

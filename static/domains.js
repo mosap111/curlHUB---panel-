@@ -212,7 +212,7 @@ async function deleteDomain(domain) {
 }
 
 async function installSSL(domain) {
-    if (!(await window.customConfirm(`سيتم الآن طلب وتثبيت / تجديد شهادة SSL للنطاق ${domain}.\n\nالرجاء التأكد أن النطاق (DNS)) موجه بالفعل إلى الـ IP الخاص بهذا السيرفر، وإلا ستفشل العملية.\n\nهل تريد الاستمرار؟`)) return;
+    if (!(await window.customConfirm(`سيتم الآن طلب وتثبيت / تجديد شهادة SSL للنطاق ${domain}.\n\nالرجاء التأكد أن النطاق (DNS) موجه بالفعل إلى الـ IP الخاص بهذا السيرفر، وإلا ستفشل العملية.\n\nهل تريد الاستمرار؟`))) return;
     
     showToast(`جاري الاتصال بـ Let's Encrypt لاستخراج شهادة النطاق ${domain}... الرجاء الانتظار`, 'info');
     

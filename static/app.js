@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnTermReset) {
             btnTermReset.addEventListener('click', async () => {
-                if (!(await window.customConfirm('هل تريد إنهاء جلسة الطرفية الحالية وبدء صدفة (Shell)) جديدة ونظيفة؟')) {
+                if (!(await window.customConfirm('هل تريد إنهاء جلسة الطرفية الحالية وبدء صدفة (Shell) جديدة ونظيفة؟'))) {
                     return;
                 }
                 try {
@@ -1444,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function killProcess(pid, name) {
-        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في إنهاء وإيقاف العملية ${name} (PID: ${pid}))؟`)) {
+        if (!(await window.customConfirm(`هل أنت متأكد من رغبتك في إنهاء وإيقاف العملية ${name} (PID: ${pid})؟`))) {
             return;
         }
         try {
@@ -2039,7 +2039,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBackupsRefresh = document.getElementById('btn-backups-refresh');
 
     window.createPresetBackup = async function(preset) {
-        if (!(await window.customConfirm(`هل تريد أخذ نسخة احتياطية فورية لـ (${preset}))؟`)) return;
+        if (!(await window.customConfirm(`هل تريد أخذ نسخة احتياطية فورية لـ (${preset})؟`))) return;
         showToast('جاري إنشاء النسخة الاحتياطية وضغط الملفات...', 'info');
         try {
             const res = await apiRequest('/api/backups/create', {
@@ -2098,7 +2098,7 @@ document.addEventListener('DOMContentLoaded', () => {
         backupsTableBody.querySelectorAll('.btn-delete-backup').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const filepath = btn.getAttribute('data-path');
-                if (!(await window.customConfirm(`هل أنت متأكد من حذف النسخة الاحتياطية (${filepath.split('/')).pop()})؟`)) return;
+                if (!(await window.customConfirm(`هل أنت متأكد من حذف النسخة الاحتياطية (${filepath.split('/').pop()})؟`))) return;
                 try {
                     const res = await apiRequest('/api/backups/delete', {
                         method: 'POST',
