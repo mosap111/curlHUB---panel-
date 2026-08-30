@@ -12,6 +12,9 @@ function toggleDomainTypeFields() {
 function showDomainModal(isEdit = false, domainName = '', domainType = 'static', domainRoot = '', domainProxy = '', forceHttps = false) {
     document.getElementById('modal-domain').classList.remove('hidden');
     
+    const ipDisplay = document.getElementById('display-server-ip');
+    if (ipDisplay) ipDisplay.innerText = window.location.hostname;
+    
     document.getElementById('domain-name').value = domainName;
     document.getElementById('domain-type').value = domainType;
     document.getElementById('domain-root').value = domainRoot;

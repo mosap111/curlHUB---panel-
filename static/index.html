@@ -1874,8 +1874,18 @@
                 <button class="modal-close-btn" onclick="closeDomainModal()">&times;</button>
             </div>
             <div style="padding: 20px;">
+                <div style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent-primary); padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 8px 0; color: var(--accent-primary); font-size: 14px;">ℹ️ كيف يعمل ربط النطاقات؟</h4>
+                    <p style="margin: 0 0 5px 0; font-size: 12px; color: var(--text-primary);">
+                        قبل إضافة النطاق هنا، يجب توجيهه أولاً من مزود النطاقات الخاص بك (مثل Cloudflare أو Namecheap) إلى عنوان الـ IP الخاص بهذا السيرفر: <strong style="color: var(--accent-warning); user-select: all;" id="display-server-ip">...</strong>
+                    </p>
+                    <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">
+                        - <strong>النطاق الأساسي:</strong> مثل <code>example.com</code> (تحتاج لإنشاء سجل A موجه للـ IP أعلاه).<br>
+                        - <strong>النطاق الفرعي:</strong> مثل <code>bot.example.com</code> (تحتاج لإنشاء سجل A لـ <code>bot</code> موجه للـ IP).
+                    </p>
+                </div>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">اسم النطاق (مثال: example.com)</label>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">اسم النطاق (مثال: example.com أو api.example.com)</label>
                     <input type="text" id="domain-name" class="form-control modern-input" placeholder="example.com" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
@@ -1912,7 +1922,7 @@
         </div>
     </div>
 
-    <script src="/static/domains.js?v=20260829_08"></script>
+    <script src="/static/domains.js?v=20260830_14"></script>
 
     <!-- MODAL: CONFIRM ACTION -->
     <div id="confirm-modal" class="modal-overlay hidden" style="z-index: 10000;">

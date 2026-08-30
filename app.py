@@ -2373,7 +2373,7 @@ def generate_nginx_conf(req: DomainCreateRequest, has_ssl: bool = False):
 
     conf_lines.append("server {")
     conf_lines.append("    listen 80;")
-    conf_lines.append(f"    server_name {req.domain} www.{req.domain};")
+    conf_lines.append(f"    server_name {req.domain};")
     
     if has_ssl and req.force_https:
         conf_lines.append("    return 301 https://$host$request_uri;")
@@ -2385,7 +2385,7 @@ def generate_nginx_conf(req: DomainCreateRequest, has_ssl: bool = False):
         conf_lines.append("")
         conf_lines.append("server {")
         conf_lines.append("    listen 443 ssl;")
-        conf_lines.append(f"    server_name {req.domain} www.{req.domain};")
+        conf_lines.append(f"    server_name {req.domain};")
         conf_lines.append(f"    ssl_certificate /etc/letsencrypt/live/{req.domain}/fullchain.pem;")
         conf_lines.append(f"    ssl_certificate_key /etc/letsencrypt/live/{req.domain}/privkey.pem;")
         conf_lines.append("    include /etc/letsencrypt/options-ssl-nginx.conf;")
@@ -2481,8 +2481,8 @@ async def delete_domain_config(req: DomainActionRequest, sess: dict = Depends(ve
 async def request_domain_ssl(req: DomainActionRequest, sess: dict = Depends(verify_session)):
     try:
         avail_path = Path(f"/etc/nginx/sites-available/{req.domain}")
-        # Always request for both apex and www
-        cmd = ["certbot", "--nginx", "-d", req.domain, "-d", f"www.{req.domain}", "--non-interactive", "--agree-tos", "--register-unsafely-without-email"]
+        # Request SSL exactly for the requested domain to avoid DNS errors with 'www'
+        cmd = ["certbot", "--nginx", "-d", req.domain, "--non-interactive", "--agree-tos", "--register-unsafely-without-email"]
         
         if avail_path.exists() and "return 301 https" in avail_path.read_text():
             cmd.append("--redirect")
