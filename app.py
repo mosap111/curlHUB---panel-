@@ -966,9 +966,21 @@ async def clean_system(sess: dict = Depends(verify_session)):
     }
 
 # --- FILE MANAGER API ---
+PANEL_DIR = Path(__file__).parent.resolve()
+
+def is_path_hidden(p: Path) -> bool:
+    try:
+        resolved = p.resolve()
+        return resolved == PANEL_DIR or PANEL_DIR in resolved.parents
+    except:
+        return False
+
 @app.get("/api/files/list")
 async def list_files(path: str = "/root", sess: dict = Depends(verify_session)):
     target_path = Path(path).resolve()
+    if is_path_hidden(target_path):
+        raise HTTPException(status_code=403, detail="هذا المجلد محمي ومخفي لأسباب أمنية")
+        
     if not target_path.exists() or not target_path.is_dir():
         raise HTTPException(status_code=404, detail="المسار غير موجود أو ليس مجلداً")
     
@@ -977,6 +989,9 @@ async def list_files(path: str = "/root", sess: dict = Depends(verify_session)):
         with os.scandir(str(target_path)) as entries:
             for entry in entries:
                 try:
+                    if is_path_hidden(Path(entry.path)):
+                        continue
+                    
                     stat = entry.stat(follow_symlinks=False)
                     is_dir = entry.is_dir(follow_symlinks=False)
                     is_symlink = entry.is_symlink()
@@ -1011,6 +1026,8 @@ async def list_files(path: str = "/root", sess: dict = Depends(verify_session)):
 @app.get("/api/files/read")
 async def read_file(path: str, sess: dict = Depends(verify_session)):
     target_path = Path(path).resolve()
+    if is_path_hidden(target_path):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي ومخفي لأسباب أمنية")
     if not target_path.exists() or not target_path.is_file():
         raise HTTPException(status_code=404, detail="الملف غير موجود")
     
@@ -1035,6 +1052,8 @@ async def read_file(path: str, sess: dict = Depends(verify_session)):
 @app.post("/api/files/save")
 async def save_file(req: FileSaveRequest, sess: dict = Depends(verify_session)):
     target_path = Path(req.path).resolve()
+    if is_path_hidden(target_path):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي ومخفي لأسباب أمنية")
     try:
         # Create backup if file exists
         if target_path.exists():
@@ -1048,6 +1067,8 @@ async def save_file(req: FileSaveRequest, sess: dict = Depends(verify_session)):
 @app.get("/api/files/download")
 async def download_file(path: str, sess: dict = Depends(verify_session)):
     target_path = Path(path).resolve()
+    if is_path_hidden(target_path):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي ومخفي لأسباب أمنية")
     if not target_path.exists() or not target_path.is_file():
         raise HTTPException(status_code=404, detail="الملف غير موجود")
     return FileResponse(
@@ -1059,6 +1080,8 @@ async def download_file(path: str, sess: dict = Depends(verify_session)):
 @app.get("/api/files/download_folder")
 async def download_folder(path: str, sess: dict = Depends(verify_session)):
     target_path = Path(path).resolve()
+    if is_path_hidden(target_path):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي ومخفي لأسباب أمنية")
     if not target_path.exists() or not target_path.is_dir():
         raise HTTPException(status_code=404, detail="المجلد غير موجود")
     
@@ -1132,7 +1155,11 @@ async def create_item(req: CreateItemRequest, sess: dict = Depends(verify_sessio
 @app.post("/api/files/rename")
 async def rename_item(req: RenameItemRequest, sess: dict = Depends(verify_session)):
     old_p = Path(req.old_path).resolve()
+    if is_path_hidden(old_p):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي")
     new_p = Path(req.new_path).resolve()
+    if is_path_hidden(new_p):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي")
     if not old_p.exists():
         raise HTTPException(status_code=404, detail="الملف الأصلي غير موجود")
     if new_p.exists():
@@ -1147,6 +1174,8 @@ async def rename_item(req: RenameItemRequest, sess: dict = Depends(verify_sessio
 @app.post("/api/files/delete")
 async def delete_item(req: DeleteItemRequest, sess: dict = Depends(verify_session)):
     target = Path(req.path).resolve()
+    if is_path_hidden(target):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي")
     if not target.exists():
         raise HTTPException(status_code=404, detail="العنصر غير موجود")
     
@@ -1169,6 +1198,8 @@ async def delete_item(req: DeleteItemRequest, sess: dict = Depends(verify_sessio
 @app.post("/api/files/chmod")
 async def chmod_item(req: ChmodRequest, sess: dict = Depends(verify_session)):
     target = Path(req.path).resolve()
+    if is_path_hidden(target):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي")
     if not target.exists():
         raise HTTPException(status_code=404, detail="العنصر غير موجود")
     try:
@@ -1181,6 +1212,8 @@ async def chmod_item(req: ChmodRequest, sess: dict = Depends(verify_session)):
 @app.post("/api/files/compress")
 async def compress_item(req: CompressRequest, sess: dict = Depends(verify_session)):
     target = Path(req.path).resolve()
+    if is_path_hidden(target):
+        raise HTTPException(status_code=403, detail="هذا المسار محمي")
     if not target.exists():
         raise HTTPException(status_code=404, detail="العنصر غير موجود")
     try:
