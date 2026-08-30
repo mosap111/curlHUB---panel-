@@ -31,12 +31,21 @@ apt-get install -y python3 python3-venv python3-pip nginx fail2ban ufw sqlite3 c
 INSTALL_DIR="/opt/curlHUB"
 REPO_URL="https://github.com/mosap111/curlHUB---panel-.git"
 
-echo -e "${YELLOW}[2/6] تحميل المشروع من GitHub...${RESET}"
+echo -e "${YELLOW}[2/6] تحميل المشروع وتحديثه من GitHub...${RESET}"
+
+# إيقاف الخدمة أولاً إذا كانت تعمل لتجنب أي تعارض أثناء التحديث
+if systemctl is-active --quiet server-panel; then
+    systemctl stop server-panel
+fi
+
 if [ -d "$INSTALL_DIR" ]; then
-    echo -e "المجلد موجود مسبقاً، سيتم تحديثه..."
+    echo -e "اللوحة مثبتة مسبقاً، سيتم تنزيل أحدث إصدار وتثبيته كـ (تحديث)..."
     cd $INSTALL_DIR
+    git fetch --all
+    git reset --hard origin/main
     git pull
 else
+    echo -e "تنزيل ملفات اللوحة لأول مرة..."
     git clone $REPO_URL $INSTALL_DIR
     cd $INSTALL_DIR
 fi
