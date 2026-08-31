@@ -2400,6 +2400,32 @@ document.addEventListener('DOMContentLoaded', () => {
         loadLogView();
         showToast('تم تحديث السجل', 'info');
     });
+
+    const btnCopyLog = document.getElementById('btn-copy-log');
+    if (btnCopyLog) btnCopyLog.addEventListener('click', () => {
+        if (!logContentDisplay) return;
+        navigator.clipboard.writeText(logContentDisplay.textContent).then(() => {
+            showToast('تم نسخ السجل إلى الحافظة', 'success');
+        }).catch(() => {
+            showToast('فشل نسخ السجل', 'error');
+        });
+    });
+
+    const btnDownloadLog = document.getElementById('btn-download-log');
+    if (btnDownloadLog) btnDownloadLog.addEventListener('click', () => {
+        if (!logContentDisplay || !logSourceSelect) return;
+        const text = logContentDisplay.textContent;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const source = logSourceSelect.value || 'log';
+        a.download = `server_log_${source}_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('جاري تنزيل السجل', 'info');
+    });
+
     if (logFilterInput) {
         let logFilterTimer = null;
         logFilterInput.addEventListener('input', () => {

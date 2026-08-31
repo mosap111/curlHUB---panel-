@@ -1,4 +1,5 @@
 import os
+os.environ["PATH"] += os.pathsep + "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 import sys
 import pty
 import fcntl
