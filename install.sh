@@ -98,7 +98,8 @@ echo -e "${YELLOW}[5/6] إعداد البروكسي العكسي عبر Nginx ع
 cat <<NGX > /etc/nginx/sites-available/server-panel
 server {
     listen ${CUSTOM_PORT};
-    server_name _; 
+    server_name _;
+    client_max_body_size 1024M; 
 
     location / {
         proxy_pass http://127.0.0.1:8090;
@@ -115,6 +116,7 @@ NGX
 
 ln -sf /etc/nginx/sites-available/server-panel /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
+sed -i "s/http {/http {\n\tclient_max_body_size 1024M;/g" /etc/nginx/nginx.conf
 systemctl restart nginx
 
 # 7. إعداد الحماية
