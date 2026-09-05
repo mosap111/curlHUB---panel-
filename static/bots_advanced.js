@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function openFilePicker(targetInputId) {
+    window.openFilePicker = function(targetInputId) {
         currentPickerTarget = document.getElementById(targetInputId);
         modalFilePicker.classList.remove("hidden");
         // Start at root or target path's folder
@@ -101,6 +101,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnBrowsePy) btnBrowsePy.addEventListener("click", () => openFilePicker("new-bot-script-py"));
     if (btnBrowsePhp) btnBrowsePhp.addEventListener("click", () => openFilePicker("new-bot-script-php"));
     
+    const btnSelectCurrentDir = document.getElementById("btn-select-current-dir");
+    if (btnSelectCurrentDir) {
+        btnSelectCurrentDir.addEventListener("click", () => {
+            if (currentPickerTarget) {
+                currentPickerTarget.value = fpPathInput.value;
+            }
+            modalFilePicker.classList.add("hidden");
+        });
+    }
+
     if (btnCloseFilePicker) {
         btnCloseFilePicker.addEventListener("click", () => modalFilePicker.classList.add("hidden"));
     }

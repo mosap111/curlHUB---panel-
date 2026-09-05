@@ -25,7 +25,7 @@ echo -e "${BLUE}🚀 بدء تثبيت لوحة تحكم السيرفر (curlHUB
 # 2. تحديث النظام وتثبيت الحزم الأساسية
 echo -e "${YELLOW}[1/6] تحديث الحزم وتثبيت المتطلبات الأساسية (Nginx, Python, Fail2ban)...${RESET}"
 apt-get update -y
-apt-get install -y python3 python3-venv python3-pip nginx fail2ban ufw sqlite3 curl git psmisc php-cli php-cgi php-curl php-fpm
+apt-get install -y python3 python3-venv python3-pip nginx fail2ban ufw sqlite3 curl git psmisc php-cli php-cgi php-curl php-fpm certbot python3-certbot-nginx
 
 # 3. إعداد مسار المشروع
 INSTALL_DIR="/opt/curlHUB"
