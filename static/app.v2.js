@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let termSocket = null;
     window.getTermSocket = () => termSocket;
     let term = null;
+    window.getTerm = () => term;
     let fitAddon = null;
     let editor = null;
     let statsInterval = null;
@@ -191,6 +192,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnTermReconnect = document.getElementById('btn-term-reconnect');
     const btnTermClear = document.getElementById('btn-term-clear');
     const btnInstallAgy = document.getElementById("btn-install-agy");
+    const btnTermCopy = document.getElementById("btn-term-copy");
+    if (btnTermCopy) {
+        btnTermCopy.addEventListener("click", () => {
+            let t = window.getTerm ? window.getTerm() : null;
+            if (t) {
+                t.selectAll();
+                let text = t.getSelection();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        t.clearSelection();
+                        showToast("✅ تم نسخ محتوى الطرفية بنجاح!", "success");
+                    }).catch(err => alert("فشل النسخ: " + err));
+                } else {
+                    alert("النسخ غير مدعوم في متصفحك (يحتاج HTTPS)");
+                }
+            } else {
+                alert("الطرفية غير جاهزة!");
+            }
+        });
+    }
     const btnTermFullscreen = document.getElementById('btn-term-fullscreen');
     const quickCmdButtons = document.querySelectorAll('.cmd-pill');
 
@@ -2760,6 +2781,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const btnInstallAgy = document.getElementById("btn-install-agy");
+    const btnTermCopy = document.getElementById("btn-term-copy");
+    if (btnTermCopy) {
+        btnTermCopy.addEventListener("click", () => {
+            let t = window.getTerm ? window.getTerm() : null;
+            if (t) {
+                t.selectAll();
+                let text = t.getSelection();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        t.clearSelection();
+                        showToast("✅ تم نسخ محتوى الطرفية بنجاح!", "success");
+                    }).catch(err => alert("فشل النسخ: " + err));
+                } else {
+                    alert("النسخ غير مدعوم في متصفحك (يحتاج HTTPS)");
+                }
+            } else {
+                alert("الطرفية غير جاهزة!");
+            }
+        });
+    }
     if (btnInstallAgy) {
         btnInstallAgy.addEventListener("click", () => {
             document.getElementById('modal-agy-proxy').classList.remove('hidden');
