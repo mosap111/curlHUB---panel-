@@ -119,6 +119,7 @@ NGX
 
 ln -sf /etc/nginx/sites-available/server-panel /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
+sed -i '/client_max_body_size 1024M;/d' /etc/nginx/nginx.conf
 sed -i "s/http {/http {\n\tclient_max_body_size 1024M;/g" /etc/nginx/nginx.conf
 systemctl restart nginx
 
