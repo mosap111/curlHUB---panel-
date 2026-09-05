@@ -663,10 +663,11 @@ async def get_system_stats(sess: dict = Depends(verify_session)):
         "uptime_seconds": int(uptime_seconds)
     }
 
-@app.get("/api/system/monitor")
-async def get_full_system_monitor(sess: dict = Depends(verify_session)):
+SYSTEM_MONITOR_CACHE = {"data": None, "timestamp": 0}
+
+def _fetch_system_monitor_data():
     load_avg = os.getloadavg() if hasattr(os, "getloadavg") else (0, 0, 0)
-    cpu_percent = await asyncio.to_thread(psutil.cpu_percent, 0.1)
+    cpu_percent = psutil.cpu_percent(0.1)
     cpu_cores = psutil.cpu_count(logical=True) or 1
     cpu_physical = psutil.cpu_count(logical=False) or cpu_cores
     per_cpu = psutil.cpu_percent(interval=None, percpu=True)
@@ -700,7 +701,7 @@ async def get_full_system_monitor(sess: dict = Depends(verify_session)):
     
     try:
         cmd_ps = ['ps', '-eo', 'pid,user,%cpu,%mem,rss,stat,comm,args', '--sort=-%cpu']
-        out_ps = await asyncio.to_thread(subprocess.check_output, cmd_ps, text=True)
+        out_ps = subprocess.check_output(cmd_ps, text=True)
         lines = out_ps.strip().split('\n')
         for line in lines[1:]:
             parts = line.split(None, 7)
@@ -755,7 +756,7 @@ async def get_full_system_monitor(sess: dict = Depends(verify_session)):
     services = []
     try:
         cmd_srv = ['systemctl', 'list-units', '--type=service', '--state=running,failed,active', '--no-legend', '--no-pager']
-        out_srv = await asyncio.to_thread(subprocess.check_output, cmd_srv, text=True)
+        out_srv = subprocess.check_output(cmd_srv, text=True)
         for line in out_srv.strip().split('\n'):
             if not line:
                 continue
@@ -861,6 +862,19 @@ async def get_full_system_monitor(sess: dict = Depends(verify_session)):
         "services": services,
         "ports": ports
     }
+
+@app.get("/api/system/monitor")
+async def get_full_system_monitor(sess: dict = Depends(verify_session)):
+    global SYSTEM_MONITOR_CACHE
+    import time
+    now = time.time()
+    if SYSTEM_MONITOR_CACHE["data"] and (now - SYSTEM_MONITOR_CACHE["timestamp"]) < 2.0:
+        return SYSTEM_MONITOR_CACHE["data"]
+        
+    data = await asyncio.to_thread(_fetch_system_monitor_data)
+    SYSTEM_MONITOR_CACHE["data"] = data
+    SYSTEM_MONITOR_CACHE["timestamp"] = now
+    return data
 
 @app.post("/api/system/service/action")
 async def service_action(req: ServiceActionRequest, sess: dict = Depends(verify_session)):
