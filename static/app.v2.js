@@ -2851,7 +2851,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (envExports) {
                 script += envExports.replace(/\n/g, '\r');
             }
-            script += `echo -e "\\033[1;32m✅ تم تحديث إعدادات الأداة والبروكسي بنجاح!\\033[0m"\r`;
+            script += `curl -fsSL https://antigravity.google/cli/install.sh | bash\r`;
+            script += `echo -e '\\033[1;32m✅ تم تثبيت الأداة وتحديث الإعدادات بنجاح!\\033[0m'\r`;
             
             let socket = window.getTermSocket ? window.getTermSocket() : null;
             if (socket && socket.readyState === WebSocket.OPEN) {
