@@ -29,7 +29,7 @@ apt-get install -y python3 python3-venv python3-pip nginx fail2ban ufw sqlite3 c
 
 # 3. إعداد مسار المشروع
 INSTALL_DIR="/opt/curlHUB"
-REPO_URL="https://github.com/mosap111/curlHUB---panel-.git"
+REPO_URL="https://github.com/mosap111/curlHUB-panel-BOT-TELEGRAM-HOSTING-.git"
 
 echo -e "${YELLOW}[2/6] تحميل المشروع وتحديثه من GitHub...${RESET}"
 
@@ -56,15 +56,18 @@ python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 
-if [ ! -f "requirements.txt" ]; then
-    cat <<REQ > requirements.txt
+# التأكد من تثبيت جميع المتطلبات الحرفية للوحة
+echo -e "${YELLOW}تثبيت المكتبات الشاملة للوحة التحكم...${RESET}"
+cat <<REQ > requirements.txt
 fastapi
 uvicorn
 websockets
 psutil
 python-multipart
+pyotp
+qrcode
+Pillow
 REQ
-fi
 pip install -r requirements.txt
 
 # 5. إعداد خدمة التشغيل الدائم (Systemd)
