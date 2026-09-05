@@ -2756,29 +2756,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-    if (document.getElementById("btn-install-agy")) {
-        document.getElementById("btn-install-agy").addEventListener("click", () => {
-            let proxyUrl = prompt("أدخل رابط البروكسي لإعداد Antigravity CLI (مثال: http://user:pass@ip:port):", "http://fkyweezv:8kkez57jwl7y@38.154.185.97:6370");
-            if (proxyUrl) {
-                let script = `
-echo "جاري إعداد البروكسي لـ Antigravity CLI..."
-sed -i '/# Antigravity CLI Proxy & Auto-approve Settings/,/alias agy="agy --dangerously-skip-permissions"/d' ~/.bashrc
-cat << 'INNER_EOF' >> ~/.bashrc
-# Antigravity CLI Proxy & Auto-approve Settings
-export HTTP_PROXY="${proxyUrl}"
-export HTTPS_PROXY="${proxyUrl}"
-alias agy="agy --dangerously-skip-permissions"
-INNER_EOF
-source ~/.bashrc
-export HTTP_PROXY="${proxyUrl}"
-export HTTPS_PROXY="${proxyUrl}"
-echo -e "\\033[1;32m✅ تم تنظيف البروكسي القديم، وإضافة البروكسي الجديد بنجاح!\\033[0m"
-`;
-                if (termSocket && termSocket.readyState === WebSocket.OPEN) {
-                    termSocket.send(script + '\r');
-                } else {
-                    alert("الطرفية غير متصلة! يرجى تحديث الصفحة أو انتظار الاتصال.");
-                }
+
+document.getElementById('agy-use-proxy').addEventListener('change', (e) => {
+    document.getElementById('agy-proxy-fields').style.display = e.target.checked ? 'block' : 'none';
+});
+
+if (document.getElementById("btn-install-agy")) {
+    document.getElementById("btn-install-agy").addEventListener("click", () => {
+        document.getElementById('modal-agy-proxy').classList.remove('hidden');
+    });
+}
+
+document.getElementById("btn-submit-agy-proxy").addEventListener("click", () => {
+    document.getElementById('modal-agy-proxy').classList.add('hidden');
+    
+    let useProxy = document.getElementById('agy-use-proxy').checked;
+    let script = `echo "جاري تجهيز إعدادات Antigravity CLI..."\r`;
+    script += `sed -i '/# Antigravity CLI Proxy & Auto-approve Settings/,/alias agy="agy --dangerously-skip-permissions"/d' ~/.bashrc\r`;
+    
+    let envExports = "";
+    if (useProxy) {
+        let ip = document.getElementById('agy-proxy-ip').value.trim();
+        let port = document.getElementById('agy-proxy-port').value.trim();
+        let user = document.getElementById('agy-proxy-user').value.trim();
+        let pass = document.getElementById('agy-proxy-pass').value.trim();
+        
+        if (ip && port) {
+            let proxyUrl = "http://";
+            if (user && pass) {
+                proxyUrl += `${user}:${pass}@`;
             }
-        });
+            proxyUrl += `${ip}:${port}`;
+            
+            envExports = `export HTTP_PROXY="${proxyUrl}"\nexport HTTPS_PROXY="${proxyUrl}"\n`;
+        }
     }
+    
+    script += `cat << 'INNER_EOF' >> ~/.bashrc\r`;
+    script += `# Antigravity CLI Proxy & Auto-approve Settings\r`;
+    if (envExports) {
+        script += envExports.replace(/\n/g, '\r');
+    }
+    script += `alias agy="agy --dangerously-skip-permissions"\rINNER_EOF\r`;
+    script += `source ~/.bashrc\r`;
+    if (envExports) {
+        script += envExports.replace(/\n/g, '\r');
+    }
+    script += `echo -e "\\033[1;32m✅ تم تحديث إعدادات الأداة والبروكسي بنجاح!\\033[0m"\r`;
+    
+    if (termSocket && termSocket.readyState === WebSocket.OPEN) {
+        termSocket.send(script);
+    } else {
+        alert("الطرفية غير متصلة! يرجى تحديث الصفحة أو انتظار الاتصال.");
+    }
+});

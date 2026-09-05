@@ -1959,5 +1959,50 @@
         </div>
     </div>
 
-</body>
-</html>
+
+    <!-- Proxy Modal -->
+    <div id="modal-agy-proxy" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-box glass-card" style="max-width: 400px; width: 90%;">
+            <div class="modal-header">
+                <h3>إعدادات Antigravity CLI</h3>
+                <button class="modal-close-btn" onclick="document.getElementById('modal-agy-proxy').classList.add('hidden')">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center;">
+                    <label class="switch" style="margin:0;">
+                        <input type="checkbox" id="agy-use-proxy">
+                        <span class="slider round"></span>
+                    </label>
+                    <span style="color: var(--text-primary); margin-right: 10px; font-weight: bold;">تفعيل البروكسي (اختياري)</span>
+                </div>
+                
+                <div id="agy-proxy-fields" style="display: none; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="flex: 2;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 13px;">الأيبي (IP)</label>
+                            <input type="text" id="agy-proxy-ip" class="form-control modern-input" placeholder="38.154.185.97" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 13px;">البورت (Port)</label>
+                            <input type="text" id="agy-proxy-port" class="form-control modern-input" placeholder="6370" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 13px;">المستخدم (اختياري)</label>
+                            <input type="text" id="agy-proxy-user" class="form-control modern-input" placeholder="user" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 13px;">الباسورد (اختياري)</label>
+                            <input type="text" id="agy-proxy-pass" class="form-control modern-input" placeholder="pass" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons" style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-ghost" onclick="document.getElementById('modal-agy-proxy').classList.add('hidden')">إلغاء</button>
+                <button class="btn btn-primary" id="btn-submit-agy-proxy">حفظ وتنفيذ الأوامر</button>
+            </div>
+        </div>
+    </div>
+</body>\n</html>
