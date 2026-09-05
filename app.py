@@ -1264,6 +1264,10 @@ class PersistentPtySession:
             if slave_fd > 2:
                 os.close(slave_fd)
             shell = os.environ.get("SHELL", "/bin/bash")
+            try:
+                os.chdir(env.get("HOME", "/root"))
+            except:
+                pass
             os.execvpe(shell, [shell, "-l"], env)
             sys.exit(0)
         else:
