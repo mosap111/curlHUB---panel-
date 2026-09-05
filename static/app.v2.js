@@ -1726,6 +1726,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if (secLogsBadge) secLogsBadge.textContent = `${data.total_events_count || securityCachedLogs.length} حدث`;
     }
 
+
+    const ipGeoCache = {};
+    
+    function getFlagEmoji(countryCode) {
+        if (!countryCode) return '';
+        const codePoints = countryCode
+            .toUpperCase()
+            .split('')
+            .map(char => 127397 + char.charCodeAt());
+        return String.fromCodePoint(...codePoints);
+    }
+
+    async function fetchIpGeo(ip) {
+        if (ip === '127.0.0.1' || ip === '::1') return { name: 'Localhost', flag: '🏠' };
+        if (ipGeoCache[ip]) return ipGeoCache[ip];
+        
+        try {
+            const res = await fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`);
+            if (!res.ok) throw new Error('API Error');
+            const data = await res.json();
+            const flag = getFlagEmoji(data.country_code);
+            const name = data.country || 'Unknown';
+            ipGeoCache[ip] = { name, flag };
+            return ipGeoCache[ip];
+        } catch (e) {
+            return { name: 'Unknown', flag: '🌍' };
+        }
+    }
+
+    function populateGeoInfo(ip, elementId) {
+        fetchIpGeo(ip).then(geo => {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.innerHTML = `${geo.flag} <span style="font-size:10px; color:var(--text-muted);">${geo.name}</span>`;
+            }
+        });
+    }
+
     function renderSecurityBannedTable(bannedIps) {
         if (!secBannedTableBody) return;
         secBannedTableBody.innerHTML = '';
@@ -1736,9 +1774,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         bannedIps.forEach(b => {
+            const geoId = 'geo-ban-' + Math.random().toString(36).substr(2, 9);
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong style="color: #f87171; font-family: 'JetBrains Mono', monospace; font-size: 13px;">${escapeHtml(b.ip)}</strong></td>
+                <td>
+                    <strong style="color: #f87171; font-family: 'JetBrains Mono', monospace; font-size: 13px;">${escapeHtml(b.ip)}</strong><br>
+                    <div id="${geoId}" style="margin-top:2px; font-size:11px;">⏳...</div>
+                </td>
                 <td><span style="color: var(--text-primary); font-size: 12px;">${escapeHtml(b.reason)}</span></td>
                 <td><span style="color: var(--text-muted); font-size: 12px; font-family: 'JetBrains Mono', monospace;">${escapeHtml(b.banned_at)}</span></td>
                 <td><span style="color: #fbbf24; font-size: 12px; font-weight: 600;">${b.remaining_minutes > 0 ? b.remaining_minutes + ' دقيقة' : b.remaining_seconds + ' ثانية'}</span></td>
@@ -1746,6 +1788,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn-srv restart btn-unban-ip" data-ip="${escapeHtml(b.ip)}" title="إلغاء وفك الحظر فوراً">🔓 فك الحظر</button>
                 </td>
             `;
+            populateGeoInfo(b.ip, geoId);
             secBannedTableBody.appendChild(tr);
         });
 
@@ -1788,6 +1831,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filtered.forEach(ev => {
+            const geoId = 'geo-log-' + Math.random().toString(36).substr(2, 9);
             const tr = document.createElement('tr');
             
             let threatBadgeColor = '#38bdf8';
@@ -1803,7 +1847,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tr.innerHTML = `
                 <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);">${escapeHtml(ev.time_str)}</span></td>
-                <td><strong style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px;">${escapeHtml(ev.ip)}</strong></td>
+                <td>
+                    <strong style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px;">${escapeHtml(ev.ip)}</strong><br>
+                    <div id="${geoId}" style="margin-top:2px;">⏳...</div>
+                </td>
                 <td><span style="font-size: 12px; font-weight: 600; color: ${threatBadgeColor};">${escapeHtml(ev.threat_type)}</span></td>
                 <td>
                     <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -1817,6 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn-srv stop btn-quick-ban-ip" data-ip="${escapeHtml(ev.ip)}" title="حظر هذا العنوان فوراً">🚫 حظر</button>
                 </td>
             `;
+            populateGeoInfo(ev.ip, geoId);
             secLogsTableBody.appendChild(tr);
         });
 
