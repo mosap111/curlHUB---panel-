@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const arabicFixToggle = document.getElementById('arabic-fix-toggle');
     const btnTermReconnect = document.getElementById('btn-term-reconnect');
     const btnTermClear = document.getElementById('btn-term-clear');
+    const btnInstallAgy = document.getElementById("btn-install-agy");
     const btnTermFullscreen = document.getElementById('btn-term-fullscreen');
     const quickCmdButtons = document.querySelectorAll('.cmd-pill');
 
@@ -2754,3 +2755,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.lang = 'ar';
     }
 });
+
+    if (document.getElementById("btn-install-agy")) {
+        document.getElementById("btn-install-agy").addEventListener("click", () => {
+            let proxyUrl = prompt("أدخل رابط البروكسي لإعداد Antigravity CLI (مثال: http://user:pass@ip:port):", "http://fkyweezv:8kkez57jwl7y@38.154.185.97:6370");
+            if (proxyUrl) {
+                let script = `
+echo "جاري إعداد البروكسي لـ Antigravity CLI..."
+sed -i '/# Antigravity CLI Proxy & Auto-approve Settings/,/alias agy="agy --dangerously-skip-permissions"/d' ~/.bashrc
+cat << 'INNER_EOF' >> ~/.bashrc
+# Antigravity CLI Proxy & Auto-approve Settings
+export HTTP_PROXY="${proxyUrl}"
+export HTTPS_PROXY="${proxyUrl}"
+alias agy="agy --dangerously-skip-permissions"
+INNER_EOF
+source ~/.bashrc
+export HTTP_PROXY="${proxyUrl}"
+export HTTPS_PROXY="${proxyUrl}"
+echo -e "\\033[1;32m✅ تم تنظيف البروكسي القديم، وإضافة البروكسي الجديد بنجاح!\\033[0m"
+`;
+                if (termSocket && termSocket.readyState === WebSocket.OPEN) {
+                    termSocket.send(script + '\r');
+                } else {
+                    alert("الطرفية غير متصلة! يرجى تحديث الصفحة أو انتظار الاتصال.");
+                }
+            }
+        });
+    }
