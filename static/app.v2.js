@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentEditingFile = null;
     let editorUnsaved = false;
     let termSocket = null;
+    window.getTermSocket = () => termSocket;
     let term = null;
     let fitAddon = null;
     let editor = null;
@@ -2811,8 +2812,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             script += `echo -e "\\033[1;32m✅ تم تحديث إعدادات الأداة والبروكسي بنجاح!\\033[0m"\r`;
             
-            if (typeof termSocket !== 'undefined' && termSocket && termSocket.readyState === WebSocket.OPEN) {
-                termSocket.send(script);
+            let socket = window.getTermSocket ? window.getTermSocket() : null;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(script + '\r');
             } else {
                 alert("الطرفية غير متصلة! يرجى تحديث الصفحة أو انتظار الاتصال.");
             }
