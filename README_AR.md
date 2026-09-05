@@ -203,6 +203,7 @@ journalctl -u server-panel -f
 لتثبيت اللوحة على سيرفر أوبونتو أو ديبيان جديد، قم بتشغيل الأمر التالي بصلاحيات الروت:
 
 ```bash
+apt install git
 git clone https://github.com/mosap111/curlHUB---panel-.git /opt/curlHUB
 cd /opt/curlHUB
 chmod +x install.sh
